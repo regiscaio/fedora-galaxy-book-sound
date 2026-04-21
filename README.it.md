@@ -39,6 +39,20 @@ interni. Installazione guidata, validazione dell'ambiente e diagnostica
 generale del notebook restano in
 [`fedora-galaxy-book-setup`](https://github.com/regiscaio/fedora-galaxy-book-setup).
 
+## Interfaccia attuale
+
+### Schermata principale
+
+![Galaxy Book Sound — schermata principale](img/app-sound-galaxy-1.png)
+
+### Equalizzatore a 10 bande
+
+![Galaxy Book Sound — equalizzatore a 10 bande](img/app-sound-galaxy-2.png)
+
+### Finestra modale `Informazioni`
+
+![Galaxy Book Sound — Informazioni](img/app-sound-galaxy-3.png)
+
 ## Ambito
 
 Il progetto offre:

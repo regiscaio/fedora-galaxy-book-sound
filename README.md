@@ -38,6 +38,20 @@ perfis e o modo `Atmos compatível` para os alto-falantes internos. Instalação
 assistida, validação do ambiente e diagnósticos gerais do notebook ficam no
 [`fedora-galaxy-book-setup`](https://github.com/regiscaio/fedora-galaxy-book-setup).
 
+## Interface atual
+
+### Tela principal
+
+![Galaxy Book Sound — tela principal](img/app-sound-galaxy-1.png)
+
+### Equalizador de 10 bandas
+
+![Galaxy Book Sound — equalizador de 10 bandas](img/app-sound-galaxy-2.png)
+
+### Modal `Sobre`
+
+![Galaxy Book Sound — Sobre](img/app-sound-galaxy-3.png)
+
 ## Escopo
 
 O projeto entrega:
