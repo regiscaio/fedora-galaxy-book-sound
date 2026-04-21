@@ -11,58 +11,72 @@
   <a href="README.it.md">🇮🇹 Italiano</a>
 </p>
 
-`Galaxy Book Sound` is a native GTK4/libadwaita sound panel for Fedora on the
-Galaxy Book4 Ultra. Its scope is intentionally narrow: a 10-band equalizer,
-ready-made profiles, and an `Atmos compatible` toggle powered directly by
-PipeWire and WirePlumber.
+## Quick install
 
-The UI follows the native GNOME preferences pattern in a single page, with base
-profile selection, an `Atmos compatible` toggle, the equalizer, and grouped
-apply actions.
-
-## Scope
-
-This app does:
-
-- load `Flat`, `Music`, and `Cinema` base profiles;
-- let you fine-tune 10 EQ bands;
-- turn the compatible Atmos-like mode on and off;
-- save and apply the app pipeline to the live session.
-
-This app does not:
-
-- install drivers, modules, or audio services;
-- run hardware diagnostics;
-- enable proprietary Dolby Atmos.
-
-Installation and diagnostics belong in
-[`fedora-galaxy-book-setup`](https://github.com/regiscaio/fedora-galaxy-book-setup).
-The MAX98390 support stays in
-[`fedora-galaxy-book-max98390`](https://github.com/regiscaio/fedora-galaxy-book-max98390).
-
-## PipeWire
-
-The app now writes its own `filter-chain` drop-in under
-`~/.config/pipewire/pipewire.conf.d/` and applies it through WirePlumber smart
-filters, targeting the notebook's internal speaker sink.
-
-That means:
-
-- an app-owned backend;
-- app-owned persisted configuration;
-- transparent application after the audio session restart.
-
-## Install
+To install the app from the public DNF repository:
 
 ```bash
 sudo dnf config-manager addrepo --from-repofile=https://packages.caioregis.com/fedora/caioregis.repo
 sudo dnf install galaxybook-sound
 ```
 
-For the full notebook flow, including audio-stack setup and diagnostics, use
-`fedora-galaxy-book-setup`.
+If you also want the notebook's graphical setup, validation, and diagnostics
+helper:
 
-## Build
+```bash
+sudo dnf install galaxybook-setup
+```
+
+`Galaxy Book Sound` is a sound app for Fedora on Samsung Galaxy Book laptops,
+with current focus on the **Galaxy Book4 Ultra**. It has a native GNOME UI
+built with `GTK4` and `libadwaita`, and it was designed to work alongside the
+speaker support packaged in
+[`fedora-galaxy-book-max98390`](https://github.com/regiscaio/fedora-galaxy-book-max98390).
+
+This repository covers the **userspace side** of audio adjustment: EQ,
+profiles, and the `Atmos compatible` mode for the internal speakers. Guided
+installation, environment validation, and broader notebook diagnostics live in
+[`fedora-galaxy-book-setup`](https://github.com/regiscaio/fedora-galaxy-book-setup).
+
+## Scope
+
+The project delivers:
+
+- `Flat`, `Music`, and `Cinema` base profiles;
+- a 10-band equalizer with manual adjustment;
+- an `Atmos compatible` mode that can be enabled and disabled from the app;
+- a single-page UI following the GNOME preferences pattern;
+- app-owned persisted configuration for the internal audio flow.
+
+This project does **not** provide:
+
+- installation of audio-stack drivers, modules, or services;
+- hardware or host audio-stack diagnostics;
+- proprietary Dolby Atmos.
+
+`Galaxy Book Setup` remains the recommended path for guided installation and
+host validation. MAX98390 support stays in
+[`fedora-galaxy-book-max98390`](https://github.com/regiscaio/fedora-galaxy-book-max98390).
+
+## How the app applies sound
+
+In day-to-day use, the idea is simple: pick a profile, turn `Atmos compatible`
+mode on or off, fine-tune the equalizer, and apply the configuration without
+leaving the native GNOME flow.
+
+Under the hood, the app keeps its own audio configuration for the notebook's
+internal speakers. In practice, that means:
+
+- EQ, profiles, and `Atmos compatible` mode persisted by the app itself;
+- transparent application to the internal output after restarting the audio
+  session;
+- clear separation between the daily-use app and the rest of the system stack.
+
+Technically, this is currently done with an app-owned `filter-chain` under
+`~/.config/pipewire/pipewire.conf.d/`, applied through WirePlumber `smart
+filters`.
+
+## Build and packaging
 
 Build dependencies on Fedora:
 
@@ -70,16 +84,31 @@ Build dependencies on Fedora:
 sudo dnf install cargo rust pkgconf-pkg-config gtk4-devel libadwaita-devel
 ```
 
+If the host does not have the full toolchain available, the `Makefile` falls
+back to a rootless `podman` container.
+
 Main commands:
 
 ```bash
 make build
 make test
 make smoke-test
+make dist
+make srpm
 make rpm
 ```
 
-## Packaging
+The locally built binary ends up at:
+
+```bash
+./target/release/galaxybook-sound
+```
+
+The local development launcher can be installed with:
+
+```bash
+make install-local
+```
 
 Relevant files:
 
@@ -87,8 +116,8 @@ Relevant files:
 - launcher: [`data/com.caioregis.GalaxyBookSound.desktop`](data/com.caioregis.GalaxyBookSound.desktop)
 - AppStream metadata: [`data/com.caioregis.GalaxyBookSound.metainfo.xml`](data/com.caioregis.GalaxyBookSound.metainfo.xml)
 
-The RPM only carries what the app actually uses, because the backend is now the
-app's own PipeWire `filter-chain`.
+The RPM only carries what the app actually uses. The project's audio backend
+lives inside the app itself through a PipeWire `filter-chain`.
 
 ## License
 
