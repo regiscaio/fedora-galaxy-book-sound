@@ -36,7 +36,7 @@ impl SoundWindow {
         let summary_group = adw::PreferencesGroup::new();
         summary_group.add(&build_about_summary_row(
             APP_NAME,
-            &tr("Equalizador nativo para Galaxy Book no Fedora."),
+            &tr("Painel de som nativo para Fedora no Galaxy Book, com perfis prontos e ajuste fino quando você quiser ir além."),
         ));
 
         let author_row = adw::ActionRow::builder()
@@ -58,7 +58,7 @@ impl SoundWindow {
         ));
         links_group.add(&build_suffix_action_row(
             &tr("Detalhes"),
-            &tr("Versão, identificação do app e o limite entre este app e o Galaxy Book Setup."),
+            &tr("Versão, identificação do app e como ele se encaixa ao lado do Galaxy Book Setup."),
             "go-next-symbolic",
             &tr("Abrir detalhes"),
             {

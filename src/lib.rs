@@ -377,10 +377,10 @@ fn build_filter_graph(config: &SoundAppConfig) -> String {
                  \t\t\t\t\tcontrol = {{ \"Gain 1\" = {ATMOS_CROSSFEED_GAIN:.2} \"Gain 2\" = {ATMOS_WIDTH_GAIN:.2} }}\n\
                  \t\t\t\t}}\n"
             ),
-            "\t\t\t\t{{ output = \"eq:Out 1\" input = \"widen_l:In 1\" }}\n\
-             \t\t\t\t{{ output = \"eq:Out 2\" input = \"widen_l:In 2\" }}\n\
-             \t\t\t\t{{ output = \"eq:Out 1\" input = \"widen_r:In 1\" }}\n\
-             \t\t\t\t{{ output = \"eq:Out 2\" input = \"widen_r:In 2\" }}\n"
+            "\t\t\t\t{ output = \"eq:Out 1\" input = \"widen_l:In 1\" }\n\
+             \t\t\t\t{ output = \"eq:Out 2\" input = \"widen_l:In 2\" }\n\
+             \t\t\t\t{ output = \"eq:Out 1\" input = \"widen_r:In 1\" }\n\
+             \t\t\t\t{ output = \"eq:Out 2\" input = \"widen_r:In 2\" }\n"
                 .to_string(),
             "\t\t\t\t\"widen_l:Out\"\n\t\t\t\t\"widen_r:Out\"".to_string(),
         )
@@ -729,6 +729,8 @@ mod tests {
         assert!(conf.contains("\"widen_r:Out\""));
         assert!(conf.contains("\"Gain 1\" = 1.08"));
         assert!(conf.contains("\"Gain 2\" = -0.08"));
+        assert!(conf.contains("{ output = \"eq:Out 1\" input = \"widen_l:In 1\" }"));
+        assert!(!conf.contains("{{ output = \"eq:Out 1\" input = \"widen_l:In 1\" }}"));
     }
 
     #[test]

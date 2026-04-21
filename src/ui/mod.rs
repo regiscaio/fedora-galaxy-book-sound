@@ -207,15 +207,15 @@ pub(crate) fn build_about_details_subpage() -> adw::NavigationPage {
     for (title, subtitle) in [
         (
             tr_mark("Objetivo"),
-            tr("Equalizador nativo para Galaxy Book no Fedora, com perfis prontos e ajuste fino por banda."),
+            tr("Ajudar você a deixar o áudio do Galaxy Book mais agradável no uso diário, com perfis prontos e espaço para ajuste fino quando fizer sentido."),
         ),
         (
             tr_mark("Módulo disponível"),
-            tr("Perfis locais, equalizador de 10 bandas, toggle Atmos compatível e aplicação nativa via PipeWire."),
+            tr("Perfis locais, equalizador de 10 bandas, modo Atmos compatível e aplicação direta na sessão via PipeWire."),
         ),
         (
             tr_mark("Limite atual"),
-            tr("Diagnóstico de hardware e instalação do stack ficam no Galaxy Book Setup. Este app não ativa Dolby Atmos proprietário."),
+            tr("Diagnóstico de hardware, instalação do stack e correções de speaker ficam no Galaxy Book Setup. Aqui o foco é só o ajuste de som, sem Dolby Atmos proprietário."),
         ),
     ] {
         let row = adw::ActionRow::builder()
