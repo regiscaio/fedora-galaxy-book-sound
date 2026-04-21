@@ -1,0 +1,64 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="cardShadow" x="4" y="10" width="248" height="238" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="8"/>
+      <feGaussianBlur stdDeviation="12"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.42 0 0 0 0 0.45 0 0 0 0 0.52 0 0 0 0.18 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+    <filter id="ringShadow" x="34" y="34" width="188" height="188" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dy="3"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.22 0 0 0 0 0.24 0 0 0 0 0.35 0 0 0 0.18 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+    <filter id="dotShadow" x="143" y="132" width="40" height="40" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.5"/>
+      <feOffset dy="2"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.24 0 0 0 0 0.12 0 0 0 0 0.39 0 0 0 0.22 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+    <linearGradient id="cardFill" x1="34" y1="34" x2="222" y2="224" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F7F7F9"/>
+    </linearGradient>
+    <linearGradient id="ringGradient" x1="52" y1="86" x2="202" y2="190" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#27C6F2"/>
+      <stop offset="0.36" stop-color="#48A8ED"/>
+      <stop offset="0.68" stop-color="#6B78E5"/>
+      <stop offset="1" stop-color="#8A46C9"/>
+    </linearGradient>
+    <radialGradient id="ringHighlight" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(101 92) rotate(53) scale(78 62)">
+      <stop stop-color="#FFFFFF" stop-opacity="0.42"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dotFill" x1="154" y1="140" x2="170" y2="156" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9360CB"/>
+      <stop offset="1" stop-color="#7A45B3"/>
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#cardShadow)">
+    <rect x="18" y="18" width="220" height="220" rx="46" fill="url(#cardFill)"/>
+    <rect x="18.75" y="18.75" width="218.5" height="218.5" rx="45.25" stroke="#D9DADF" stroke-opacity="0.92" stroke-width="1.5"/>
+  </g>
+
+  <g filter="url(#ringShadow)">
+    <circle cx="128" cy="128" r="73" stroke="url(#ringGradient)" stroke-width="20"/>
+    <circle cx="128" cy="128" r="73" stroke="url(#ringHighlight)" stroke-width="20"/>
+  </g>
+
+  <circle cx="128" cy="128" r="63" fill="#FBFBFC"/>
+
+  <g filter="url(#dotShadow)">
+    <circle cx="163" cy="149" r="12" fill="url(#dotFill)"/>
+  </g>
+</svg>

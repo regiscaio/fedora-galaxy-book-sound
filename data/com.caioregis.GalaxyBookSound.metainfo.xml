@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.caioregis.GalaxyBookSound</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <name>Galaxy Book Sound</name>
+  <summary>Native PipeWire equalizer and sound profiles for Galaxy Book notebooks on Fedora</summary>
+  <developer id="com.caioregis">
+    <name>Caio Régis</name>
+  </developer>
+  <launchable type="desktop-id">com.caioregis.GalaxyBookSound.desktop</launchable>
+  <url type="homepage">https://github.com/regiscaio/fedora-galaxy-book-sound</url>
+  <url type="bugtracker">https://github.com/regiscaio/fedora-galaxy-book-sound/issues</url>
+  <description>
+    <p>
+      Galaxy Book Sound is a native GTK4 and libadwaita helper for Fedora on
+      Samsung Galaxy Book notebooks. It focuses on sound tuning through a
+      native PipeWire filter-chain, 10-band equalization, ready-made profiles,
+      and an Atmos-compatible preset toggle.
+    </p>
+    <p>
+      Hardware diagnostics and installation stay in the Galaxy Book Setup app.
+      Galaxy Book Sound is the focused control surface for EQ and compatible
+      spatial audio on this stack, without proprietary Atmos features.
+    </p>
+  </description>
+  <content_rating type="oars-1.1"/>
+</component>

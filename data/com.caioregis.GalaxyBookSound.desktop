@@ -1,0 +1,19 @@
+[Desktop Entry]
+Name=Galaxy Book Sound
+Name[pt]=Galaxy Book Sound
+Name[pt_BR]=Galaxy Book Sound
+GenericName=Audio Equalizer
+GenericName[pt]=Equalizador de áudio
+GenericName[pt_BR]=Equalizador de áudio
+Comment=Adjust Galaxy Book sound profiles with a native PipeWire equalizer on Fedora
+Comment[pt]=Ajusta perfis de som do Galaxy Book com equalizador nativo em PipeWire no Fedora
+Comment[pt_BR]=Ajusta perfis de som do Galaxy Book com equalizador nativo em PipeWire no Fedora
+Exec=@EXEC@
+Icon=@ICON@
+Type=Application
+Terminal=false
+StartupNotify=true
+X-GNOME-UsesNotifications=true
+StartupWMClass=@STARTUP_WM_CLASS@
+Categories=Settings;
+Keywords=Galaxy Book;Fedora;Audio;PipeWire;WirePlumber;Equalizer;Atmos;
