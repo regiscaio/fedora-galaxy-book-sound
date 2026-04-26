@@ -24,6 +24,11 @@ BuildRequires:  pkgconfig(gtk4)
 BuildRequires:  pkgconfig(libadwaita-1)
 BuildRequires:  rust
 
+Requires:       pipewire
+Requires:       polkit
+Requires:       systemd
+Requires:       wireplumber
+
 %description
 Galaxy Book Sound is a native GTK4 and libadwaita helper for Fedora on Galaxy
 Book notebooks. It focuses on sound tuning through a native PipeWire
