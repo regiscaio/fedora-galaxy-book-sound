@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: galaxybook-sound 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-26 11:36-0300\n"
+"POT-Creation-Date: 2026-04-26 12:19-0300\n"
 "PO-Revision-Date: 2026-04-20 18:36-0300\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -57,143 +57,165 @@ msgstr "No se pudo actualizar el diagnóstico."
 msgid "PipeWire ou WirePlumber não responderam nesta sessão."
 msgstr ""
 
-#: src/actions/runtime.rs:143
+#: src/actions/runtime.rs:141
+msgid "Pipeline nativo do app ativo e encadeado à saída combinada."
+msgstr "Pipeline nativo de la app activo y encadenado a la salida combinada."
+
+#: src/actions/runtime.rs:145
 #, rust-format
 msgid "Pipeline nativo do app ativo e encadeado ao dispositivo: {output}"
 msgstr ""
 
-#: src/actions/runtime.rs:146
+#: src/actions/runtime.rs:148
 msgid "Pipeline nativo do app ativo na sessão atual."
 msgstr ""
 
-#: src/actions/runtime.rs:149
+#: src/actions/runtime.rs:151
 msgid ""
 "Configuração local encontrada, mas o pipeline ainda não foi carregado na "
 "sessão atual."
 msgstr ""
 
-#: src/actions/runtime.rs:151
+#: src/actions/runtime.rs:153
 msgid "Nenhum pipeline do app foi aplicado ainda."
 msgstr ""
 
-#: src/actions/runtime.rs:156
+#: src/actions/runtime.rs:158
 #, rust-format
 msgid "Perfil ativo: {preset}"
 msgstr ""
 
-#: src/actions/runtime.rs:158
+#: src/actions/runtime.rs:160
 msgid ""
 "Há uma configuração local salva, mas ela ainda não está ativa na sessão."
 msgstr ""
 
-#: src/actions/runtime.rs:160
+#: src/actions/runtime.rs:162
 msgid "Nenhum perfil ativo agora."
 msgstr ""
 
-#: src/actions/runtime.rs:212
+#: src/actions/runtime.rs:229
 msgid "Bandas restauradas para a curva padrão do perfil selecionado."
 msgstr ""
 
-#: src/actions/runtime.rs:222
+#: src/actions/runtime.rs:239
 msgid "Aplicando a nova curva e reiniciando a sessão de áudio…"
 msgstr ""
 
-#: src/actions/runtime.rs:234
+#: src/actions/runtime.rs:251
 #, rust-format
 msgid "Perfil aplicado no PipeWire: {preset}"
 msgstr ""
 
-#: src/actions/runtime.rs:243 src/ui/window/pages.rs:50
+#: src/actions/runtime.rs:260 src/ui/window/pages.rs:59
 #, fuzzy
 msgid "Aplicar"
 msgstr "Aplicación"
 
-#: src/actions/runtime.rs:251
+#: src/actions/runtime.rs:268
 #, fuzzy
 msgid "Falha ao acompanhar a aplicação do perfil de áudio."
 msgstr "No se pudo seguir la acción solicitada."
 
-#: src/actions/runtime.rs:285 src/ui/about.rs:60 src/ui/mod.rs:180
+#: src/actions/runtime.rs:307 src/ui/about.rs:60 src/ui/mod.rs:180
 #: src/ui/mod.rs:233
 msgid "Detalhes"
 msgstr "Detalles"
 
-#: src/actions/runtime.rs:301
+#: src/actions/runtime.rs:323
 #, fuzzy
 msgid "A operação falhou, mas não retornou saída textual."
 msgstr "La acción falló, pero no devolvió salida textual."
 
-#: src/lib.rs:57
+#: src/lib.rs:59
 msgid "Neutro"
 msgstr ""
 
-#: src/lib.rs:58
+#: src/lib.rs:60
 msgid "Música"
 msgstr ""
 
-#: src/lib.rs:59
+#: src/lib.rs:61
 msgid "Cinema"
 msgstr ""
 
-#: src/lib.rs:181
+#: src/lib.rs:187
 #, fuzzy, rust-format
 msgid "Falha ao preparar o diretório de configuração: {error}"
 msgstr "No se pudo abrir la app de la cámara: {error}"
 
-#: src/lib.rs:189
+#: src/lib.rs:195
 #, fuzzy, rust-format
 msgid "Falha ao serializar a configuração de áudio: {error}"
 msgstr "No se pudo iniciar la acción privilegiada: {error}"
 
-#: src/lib.rs:195
+#: src/lib.rs:201
 #, fuzzy, rust-format
 msgid "Falha ao salvar a configuração de áudio: {error}"
 msgstr "No se pudo iniciar la acción privilegiada: {error}"
 
-#: src/lib.rs:205
+#: src/lib.rs:214
+msgid ""
+"Não foi possível identificar nenhuma saída de áudio para criar a saída "
+"combinada."
+msgstr "No se pudo identificar ninguna salida de audio para crear la salida combinada."
+
+#: src/lib.rs:221
 msgid ""
 "Não foi possível identificar a saída interna do notebook para aplicar o "
 "pipeline."
 msgstr ""
 
-#: src/lib.rs:267
+#: src/lib.rs:259 src/ui/window/pages.rs:52
+msgid "Saída combinada"
+msgstr "Salida combinada"
+
+#: src/lib.rs:295
 msgid "Falha ao gerar a configuração do PipeWire do app."
 msgstr ""
 
-#: src/lib.rs:286
+#: src/lib.rs:317
 msgid "A saída alvo do notebook não expôs um node.name válido no PipeWire."
 msgstr ""
 
-#: src/lib.rs:293
+#: src/lib.rs:324
 #, fuzzy, rust-format
 msgid "Falha ao preparar o diretório do PipeWire: {error}"
 msgstr "No se pudo abrir el enlace: {error}"
 
-#: src/lib.rs:308
+#: src/lib.rs:339
 #, fuzzy, rust-format
 msgid "Falha ao gravar a configuração do PipeWire: {error}"
 msgstr "No se pudo iniciar la acción privilegiada: {error}"
 
-#: src/lib.rs:429
+#: src/lib.rs:503
 msgid ""
 "Systemd de usuário não está disponível. Não foi possível reiniciar PipeWire "
 "e WirePlumber."
 msgstr ""
 
-#: src/lib.rs:438
+#: src/lib.rs:512
 #, fuzzy, rust-format
 msgid "Falha ao reiniciar a sessão de áudio: {error}"
 msgstr "No se pudo iniciar la acción privilegiada: {error}"
 
-#: src/lib.rs:453
+#: src/lib.rs:527
 msgid "A sessão de áudio não aceitou o reinício do PipeWire e do WirePlumber."
 msgstr ""
 
-#: src/lib.rs:467
+#: src/lib.rs:541
 msgid "O PipeWire não voltou a responder após o reinício da sessão de áudio."
 msgstr ""
 
-#: src/lib.rs:480
+#: src/lib.rs:558
+msgid ""
+"A saída combinada do Galaxy Book Sound não apareceu na sessão do PipeWire "
+"após aplicar a configuração."
+msgstr ""
+"La salida combinada de Galaxy Book Sound no apareció en la sesión de "
+"PipeWire después de aplicar la configuración."
+
+#: src/lib.rs:562
 msgid ""
 "O pipeline do Galaxy Book Sound não apareceu na sessão do PipeWire após "
 "aplicar a configuração."
@@ -305,9 +327,11 @@ msgstr "Diagnóstico no disponible"
 
 #: src/ui/mod.rs:214
 msgid ""
-"Perfis locais, equalizador de 10 bandas, modo Atmos compatível e aplicação "
-"direta na sessão via PipeWire."
+"Perfis locais, equalizador de 10 bandas, modo Atmos compatível, saída "
+"combinada e aplicação direta na sessão via PipeWire."
 msgstr ""
+"Perfiles locales, ecualizador de 10 bandas, modo Atmos compatible, salida "
+"combinada y aplicación directa en la sesión mediante PipeWire."
 
 #: src/ui/mod.rs:217
 msgid "Limite atual"
@@ -324,62 +348,67 @@ msgstr ""
 msgid "Coletando…"
 msgstr "Recopilando…"
 
-#: src/ui/window/pages.rs:36
+#: src/ui/window/pages.rs:37
 msgid "Perfil base"
 msgstr ""
 
-#: src/ui/window/pages.rs:37
+#: src/ui/window/pages.rs:38
 msgid "Escolha a curva usada como ponto de partida para as 10 bandas."
 msgstr ""
 
-#: src/ui/window/pages.rs:43
+#: src/ui/window/pages.rs:44
 msgid "Atmos compatível"
 msgstr ""
 
-#: src/ui/window/pages.rs:45
+#: src/ui/window/pages.rs:46
 msgid ""
 "Ativa um pipeline PipeWire com reforço moderado e abertura estéreo, sem DSP "
 "proprietário."
 msgstr ""
 
-#: src/ui/window/pages.rs:52
+#: src/ui/window/pages.rs:54
+msgid ""
+"Duplica o áudio processado para todos os dispositivos de saída disponíveis."
+msgstr "Duplica el audio procesado en todos los dispositivos de salida disponibles."
+
+#: src/ui/window/pages.rs:61
 msgid "Restaurar"
 msgstr ""
 
-#: src/ui/window/pages.rs:55
+#: src/ui/window/pages.rs:64
 #, fuzzy
 msgid "Aplicação"
 msgstr "Aplicación"
 
-#: src/ui/window/pages.rs:57
+#: src/ui/window/pages.rs:66
 msgid ""
 "Aplique a curva atual no PipeWire ou restaure as bandas do perfil base "
 "selecionado."
 msgstr ""
 
-#: src/ui/window/pages.rs:66
+#: src/ui/window/pages.rs:75
 #, fuzzy
 msgid "Sessão atual"
 msgstr "Alcance actual"
 
-#: src/ui/window/pages.rs:68
+#: src/ui/window/pages.rs:77
 msgid "Estado do pipeline do app e do perfil ativo na sessão de áudio."
 msgstr ""
 
-#: src/ui/window/pages.rs:75
+#: src/ui/window/pages.rs:84
 msgid "Configuração"
 msgstr ""
 
-#: src/ui/window/pages.rs:77
+#: src/ui/window/pages.rs:86
 msgid ""
-"Perfil base, modo Atmos compatível e nome do preset local que será salvo."
-msgstr ""
+"Perfil base, modos de processamento e nome do preset local que será salvo."
+msgstr "Perfil base, modos de procesamiento y nombre del preset local que se guardará."
 
-#: src/ui/window/pages.rs:85
+#: src/ui/window/pages.rs:95
 msgid "Equalizador de 10 bandas"
 msgstr ""
 
-#: src/ui/window/pages.rs:87
+#: src/ui/window/pages.rs:97
 msgid "Ajuste fino por frequência sobre o perfil base selecionado."
 msgstr ""
 

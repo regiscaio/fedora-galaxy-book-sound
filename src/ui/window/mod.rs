@@ -2,8 +2,8 @@ mod build;
 mod pages;
 mod shell;
 
-use std::cell::RefCell;
 use std::cell::Cell;
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use gtk::gio;
@@ -33,6 +33,7 @@ pub(crate) struct SoundWindow {
     pub(crate) preset_name_row: InfoRow,
     pub(crate) profile_row: adw::ComboRow,
     pub(crate) atmos_switch_row: adw::SwitchRow,
+    pub(crate) combined_output_switch_row: adw::SwitchRow,
     pub(crate) band_controls: Vec<EqualizerBandControl>,
     pub(crate) sound_config: Rc<RefCell<SoundAppConfig>>,
     pub(crate) session_state: Rc<RefCell<Option<SoundSessionState>>>,

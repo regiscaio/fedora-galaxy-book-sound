@@ -59,6 +59,8 @@ O projeto entrega:
 - perfis base `Neutro`, `Música` e `Cinema`;
 - equalizador de 10 bandas com ajuste manual;
 - modo `Atmos compatível` com ativação e desativação pelo próprio app;
+- opção de `Saída combinada` para duplicar o áudio processado em todas as
+  saídas disponíveis;
 - interface em página única no padrão de preferências do GNOME;
 - configuração persistida pelo próprio app para o fluxo de áudio interno.
 
@@ -75,20 +77,24 @@ assistida e validação do host. O suporte MAX98390 continua no
 ## Como o app aplica o som
 
 No uso diário, a ideia do app é simples: você ajusta o perfil, liga ou desliga
-o modo `Atmos compatível`, faz o fine-tuning do equalizador e aplica a
-configuração sem sair do fluxo nativo do GNOME.
+o modo `Atmos compatível`, decide se quer usar a `Saída combinada`, faz o
+fine-tuning do equalizador e aplica a configuração sem sair do fluxo nativo do
+GNOME.
 
 Por baixo, o app mantém sua própria configuração de áudio para os
 alto-falantes internos do notebook. Na prática, isso significa:
 
-- equalizador, perfis e modo `Atmos compatível` persistidos pelo próprio app;
+- equalizador, perfis, modo `Atmos compatível` e preferência de saída
+  combinada persistidos pelo próprio app;
 - aplicação transparente na saída interna depois de reiniciar a sessão de
-  áudio;
+  áudio, ou em uma saída combinada quando esse modo estiver ativo;
 - separação clara entre o app de uso diário e o restante do stack do sistema.
 
 Tecnicamente, isso hoje é feito com um `filter-chain` próprio em
 `~/.config/pipewire/pipewire.conf.d/`, aplicado pela política de `smart
-filters` do `WirePlumber`.
+filters` do `WirePlumber`. Quando a `Saída combinada` está ativa, o app
+também cria um sink virtual com `libpipewire-module-combine-stream` e o usa
+como destino do pipeline.
 
 ## Build e empacotamento
 

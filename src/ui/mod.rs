@@ -211,7 +211,7 @@ pub(crate) fn build_about_details_subpage() -> adw::NavigationPage {
         ),
         (
             tr_mark("Módulo disponível"),
-            tr("Perfis locais, equalizador de 10 bandas, modo Atmos compatível e aplicação direta na sessão via PipeWire."),
+            tr("Perfis locais, equalizador de 10 bandas, modo Atmos compatível, saída combinada e aplicação direta na sessão via PipeWire."),
         ),
         (
             tr_mark("Limite atual"),

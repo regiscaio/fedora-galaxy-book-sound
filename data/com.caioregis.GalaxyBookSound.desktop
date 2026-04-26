@@ -15,4 +15,4 @@ Terminal=false
 StartupNotify=true
 StartupWMClass=@STARTUP_WM_CLASS@
 Categories=Settings;
-Keywords=Galaxy Book;Fedora;Audio;PipeWire;WirePlumber;Equalizer;Atmos;
+Keywords=Galaxy Book;Fedora;Audio;PipeWire;WirePlumber;Equalizer;Atmos;Combined Output;

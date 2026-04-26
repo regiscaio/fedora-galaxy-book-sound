@@ -1,14 +1,12 @@
 use libadwaita as adw;
 use libadwaita::prelude::*;
 
-use galaxybook_sound::{
-    APP_NAME, AudioProfile, EQUALIZER_FREQUENCIES_HZ, SoundAppConfig, tr,
-};
+use galaxybook_sound::{APP_NAME, AudioProfile, EQUALIZER_FREQUENCIES_HZ, SoundAppConfig, tr};
 
+use crate::ui::window::EqualizerBandControl;
 use crate::ui::{
     InfoRow, build_combo_row, build_linked_buttons_row, build_scrolled_navigation_page,
 };
-use crate::ui::window::EqualizerBandControl;
 
 pub(super) struct SoundPage {
     pub(super) page: adw::NavigationPage,
@@ -19,6 +17,7 @@ pub(super) struct SoundPage {
     pub(super) preset_name_row: InfoRow,
     pub(super) profile_row: adw::ComboRow,
     pub(super) atmos_switch_row: adw::SwitchRow,
+    pub(super) combined_output_switch_row: adw::SwitchRow,
     pub(super) band_controls: Vec<EqualizerBandControl>,
 }
 
@@ -34,7 +33,9 @@ pub(super) fn build_sound_page(initial_config: &SoundAppConfig) -> SoundPage {
         .collect::<Vec<_>>();
     let profile_row = build_combo_row(
         &tr("Perfil base"),
-        Some(&tr("Escolha a curva usada como ponto de partida para as 10 bandas.")),
+        Some(&tr(
+            "Escolha a curva usada como ponto de partida para as 10 bandas.",
+        )),
         &profile_values,
     );
     profile_row.set_selected(initial_config.selected_profile.selected_index());
@@ -46,6 +47,14 @@ pub(super) fn build_sound_page(initial_config: &SoundAppConfig) -> SoundPage {
         ))
         .build();
     atmos_switch_row.set_active(initial_config.atmos_enabled);
+
+    let combined_output_switch_row = adw::SwitchRow::builder()
+        .title(tr("Saída combinada"))
+        .subtitle(tr(
+            "Duplica o áudio processado para todos os dispositivos de saída disponíveis.",
+        ))
+        .build();
+    combined_output_switch_row.set_active(initial_config.combined_output_enabled);
 
     let apply_equalizer_button = gtk::Button::with_label(&tr("Aplicar"));
     apply_equalizer_button.add_css_class("suggested-action");
@@ -74,11 +83,12 @@ pub(super) fn build_sound_page(initial_config: &SoundAppConfig) -> SoundPage {
     let tuning_group = adw::PreferencesGroup::builder()
         .title(tr("Configuração"))
         .description(tr(
-            "Perfil base, modo Atmos compatível e nome do preset local que será salvo.",
+            "Perfil base, modos de processamento e nome do preset local que será salvo.",
         ))
         .build();
     tuning_group.add(&profile_row);
     tuning_group.add(&atmos_switch_row);
+    tuning_group.add(&combined_output_switch_row);
     tuning_group.add(&preset_name_row.row);
 
     let bands_group = adw::PreferencesGroup::builder()
@@ -133,6 +143,7 @@ pub(super) fn build_sound_page(initial_config: &SoundAppConfig) -> SoundPage {
         preset_name_row,
         profile_row,
         atmos_switch_row,
+        combined_output_switch_row,
         band_controls,
     }
 }

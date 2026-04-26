@@ -37,6 +37,15 @@ impl SoundWindow {
         });
 
         let this = self.clone();
+        self.combined_output_switch_row
+            .connect_active_notify(move |row| {
+                if this.ui_syncing.get() {
+                    return;
+                }
+                this.set_combined_output_enabled(row.is_active(), false);
+            });
+
+        let this = self.clone();
         self.apply_equalizer_button.connect_clicked(move |_| {
             this.apply_current_equalizer();
         });
@@ -59,6 +68,7 @@ impl SoundWindow {
         self.update_button.set_sensitive(sensitive);
         self.profile_row.set_sensitive(sensitive);
         self.atmos_switch_row.set_sensitive(sensitive);
+        self.combined_output_switch_row.set_sensitive(sensitive);
         self.apply_equalizer_button.set_sensitive(sensitive);
         self.reset_equalizer_button.set_sensitive(sensitive);
 

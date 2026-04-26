@@ -137,6 +137,8 @@ impl SoundWindow {
     fn apply_session_state(&self, state: SoundSessionState) {
         let engine_status = if !state.pipewire_available {
             tr("PipeWire ou WirePlumber não responderam nesta sessão.")
+        } else if state.filter_active && state.combined_output_active {
+            tr("Pipeline nativo do app ativo e encadeado à saída combinada.")
         } else if state.filter_active {
             match state.target_output.as_deref() {
                 Some(output) => trf(
@@ -205,6 +207,21 @@ impl SoundWindow {
         }
     }
 
+    pub(crate) fn set_combined_output_enabled(&self, enabled: bool, apply_after: bool) {
+        let changed = {
+            let mut config = self.sound_config.borrow_mut();
+            let changed = config.combined_output_enabled != enabled;
+            config.combined_output_enabled = enabled;
+            changed
+        };
+
+        self.update_equalizer_summary();
+
+        if changed && apply_after {
+            self.apply_current_equalizer();
+        }
+    }
+
     pub(crate) fn restore_selected_profile_curve(&self) {
         let profile = self.sound_config.borrow().selected_profile;
         self.load_profile_into_controls(profile, false);
@@ -260,6 +277,7 @@ impl SoundWindow {
         let preset_name = config.preset_name();
         let selected_index = config.selected_profile.selected_index();
         let atmos_enabled = config.atmos_enabled;
+        let combined_output_enabled = config.combined_output_enabled;
         drop(config);
 
         self.ui_syncing.set(true);
@@ -268,6 +286,10 @@ impl SoundWindow {
         }
         if self.atmos_switch_row.is_active() != atmos_enabled {
             self.atmos_switch_row.set_active(atmos_enabled);
+        }
+        if self.combined_output_switch_row.is_active() != combined_output_enabled {
+            self.combined_output_switch_row
+                .set_active(combined_output_enabled);
         }
         self.ui_syncing.set(false);
 

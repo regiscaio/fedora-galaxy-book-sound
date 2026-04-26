@@ -59,6 +59,8 @@ The project delivers:
 - `Flat`, `Music`, and `Cinema` base profiles;
 - a 10-band equalizer with manual adjustment;
 - an `Atmos compatible` mode that can be enabled and disabled from the app;
+- a `Combined output` option to duplicate processed audio to all available
+  outputs;
 - a single-page UI following the GNOME preferences pattern;
 - app-owned persisted configuration for the internal audio flow.
 
@@ -75,20 +77,23 @@ host validation. MAX98390 support stays in
 ## How the app applies sound
 
 In day-to-day use, the idea is simple: pick a profile, turn `Atmos compatible`
-mode on or off, fine-tune the equalizer, and apply the configuration without
-leaving the native GNOME flow.
+mode on or off, decide whether to use `Combined output`, fine-tune the
+equalizer, and apply the configuration without leaving the native GNOME flow.
 
 Under the hood, the app keeps its own audio configuration for the notebook's
 internal speakers. In practice, that means:
 
-- EQ, profiles, and `Atmos compatible` mode persisted by the app itself;
+- EQ, profiles, `Atmos compatible` mode, and the combined-output preference
+  persisted by the app itself;
 - transparent application to the internal output after restarting the audio
-  session;
+  session, or to a combined output when that mode is enabled;
 - clear separation between the daily-use app and the rest of the system stack.
 
 Technically, this is currently done with an app-owned `filter-chain` under
 `~/.config/pipewire/pipewire.conf.d/`, applied through WirePlumber `smart
-filters`.
+filters`. When `Combined output` is enabled, the app also creates a virtual
+sink with `libpipewire-module-combine-stream` and uses it as the pipeline
+target.
 
 ## Build and packaging
 

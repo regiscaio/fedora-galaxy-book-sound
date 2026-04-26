@@ -43,6 +43,7 @@ impl SoundWindow {
             preset_name_row: sound_page.preset_name_row,
             profile_row: sound_page.profile_row,
             atmos_switch_row: sound_page.atmos_switch_row,
+            combined_output_switch_row: sound_page.combined_output_switch_row,
             band_controls: sound_page.band_controls,
             sound_config,
             session_state,

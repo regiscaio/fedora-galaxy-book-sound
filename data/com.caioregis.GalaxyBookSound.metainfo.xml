@@ -16,7 +16,8 @@
       Galaxy Book Sound is a native GTK4 and libadwaita helper for Fedora on
       Samsung Galaxy Book notebooks. It focuses on sound tuning through a
       native PipeWire filter-chain, 10-band equalization, ready-made profiles,
-      and an Atmos-compatible preset toggle.
+      an Atmos-compatible preset toggle, and an optional combined output for
+      playing through all available sinks.
     </p>
     <p>
       Hardware diagnostics and installation stay in the Galaxy Book Setup app.

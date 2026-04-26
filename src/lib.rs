@@ -22,6 +22,8 @@ const PIPEWIRE_FILTER_DESCRIPTION: &str = "Galaxy Book Sound";
 const PIPEWIRE_FILTER_MAIN_NODE: &str = "galaxybook_sound_sink";
 const PIPEWIRE_FILTER_STREAM_NODE: &str = "galaxybook_sound_output";
 const PIPEWIRE_FILTER_NAME: &str = "galaxybook-sound";
+const PIPEWIRE_COMBINED_SINK_NODE: &str = "galaxybook_sound_combined_sink";
+const PIPEWIRE_COMBINED_SINK_DESCRIPTION: &str = "Galaxy Book Sound - Saída combinada";
 const PIPEWIRE_FILTER_CONFIG_NAME: &str = "99-galaxybook-sound.conf";
 const RESTART_AUDIO_STACK_COMMAND: &str =
     "systemctl --user restart wireplumber.service pipewire.service pipewire-pulse.service";
@@ -98,6 +100,8 @@ pub struct SoundAppConfig {
     pub selected_profile: AudioProfile,
     #[serde(default)]
     pub atmos_enabled: bool,
+    #[serde(default)]
+    pub combined_output_enabled: bool,
     pub bands_db: [f64; 10],
 }
 
@@ -107,6 +111,7 @@ impl Default for SoundAppConfig {
         Self {
             selected_profile,
             atmos_enabled: false,
+            combined_output_enabled: false,
             bands_db: default_bands_for_profile(selected_profile),
         }
     }
@@ -139,6 +144,7 @@ pub struct SoundSessionState {
     pub pipewire_available: bool,
     pub config_present: bool,
     pub filter_active: bool,
+    pub combined_output_active: bool,
     pub active_profile_name: Option<String>,
     pub target_output: Option<String>,
 }
@@ -201,13 +207,24 @@ pub fn save_sound_app_config(config: &SoundAppConfig) -> Result<(), String> {
 pub fn save_and_apply_profile(config: &SoundAppConfig) -> Result<String, String> {
     save_sound_app_config(config)?;
 
-    let target = detect_target_sink().ok_or_else(|| {
-        tr("Não foi possível identificar a saída interna do notebook para aplicar o pipeline.")
-    })?;
+    let nodes = pipewire_nodes();
+    let target = if config.combined_output_enabled {
+        if !has_real_output_sink(&nodes) {
+            return Err(tr(
+                "Não foi possível identificar nenhuma saída de áudio para criar a saída combinada.",
+            ));
+        }
+
+        combined_output_sink_node()
+    } else {
+        detect_target_sink_from_nodes(&nodes).ok_or_else(|| {
+            tr("Não foi possível identificar a saída interna do notebook para aplicar o pipeline.")
+        })?
+    };
 
     write_pipewire_filter_config(config, &target)?;
     restart_audio_stack()?;
-    wait_for_filter_activation()?;
+    wait_for_profile_activation(config)?;
 
     Ok(config.preset_name())
 }
@@ -221,23 +238,33 @@ pub fn collect_sound_session_state() -> SoundSessionState {
             pipewire_available: false,
             config_present,
             filter_active: false,
+            combined_output_active: false,
             active_profile_name: None,
             target_output: None,
         };
     }
 
+    let saved_config = load_sound_app_config();
     let nodes = pipewire_nodes();
     let filter_active = nodes.iter().any(|node| {
         node.node_name.as_deref() == Some(PIPEWIRE_FILTER_MAIN_NODE)
             && node.media_class.as_deref() == Some("Audio/Sink")
     });
+    let combined_output_active = nodes.iter().any(|node| {
+        node.node_name.as_deref() == Some(PIPEWIRE_COMBINED_SINK_NODE)
+            && node.media_class.as_deref() == Some("Audio/Sink")
+    });
 
-    let target_output = detect_target_sink_from_nodes(&nodes)
-        .and_then(|node| node.node_description.or(node.node_name))
-        .or_else(detect_default_output_description);
+    let target_output = if saved_config.combined_output_enabled {
+        Some(tr("Saída combinada"))
+    } else {
+        detect_target_sink_from_nodes(&nodes)
+            .and_then(|node| node.node_description.or(node.node_name))
+            .or_else(detect_default_output_description)
+    };
 
     let active_profile_name = if filter_active {
-        Some(load_sound_app_config().preset_name())
+        Some(saved_config.preset_name())
     } else {
         None
     };
@@ -246,6 +273,7 @@ pub fn collect_sound_session_state() -> SoundSessionState {
         pipewire_available,
         config_present,
         filter_active,
+        combined_output_active,
         active_profile_name,
         target_output,
     }
@@ -281,10 +309,14 @@ fn effective_bands_for_config(config: &SoundAppConfig) -> [f64; 10] {
     effective
 }
 
-fn write_pipewire_filter_config(config: &SoundAppConfig, target: &PipeWireNode) -> Result<(), String> {
-    let target_name = target.node_name.as_deref().ok_or_else(|| {
-        tr("A saída alvo do notebook não expôs um node.name válido no PipeWire.")
-    })?;
+fn write_pipewire_filter_config(
+    config: &SoundAppConfig,
+    target: &PipeWireNode,
+) -> Result<(), String> {
+    let target_name = target
+        .node_name
+        .as_deref()
+        .ok_or_else(|| tr("A saída alvo do notebook não expôs um node.name válido no PipeWire."))?;
     let path = pipewire_filter_config_path();
 
     if let Some(parent) = path.parent() {
@@ -296,12 +328,15 @@ fn write_pipewire_filter_config(config: &SoundAppConfig, target: &PipeWireNode) 
         })?;
     }
 
-    let content = build_pipewire_filter_config(config, &PipeWireNode {
-        node_name: Some(target_name.to_string()),
-        node_description: target.node_description.clone(),
-        media_class: target.media_class.clone(),
-        device_profile_description: target.device_profile_description.clone(),
-    });
+    let content = build_pipewire_filter_config(
+        config,
+        &PipeWireNode {
+            node_name: Some(target_name.to_string()),
+            node_description: target.node_description.clone(),
+            media_class: target.media_class.clone(),
+            device_profile_description: target.device_profile_description.clone(),
+        },
+    );
 
     fs::write(&path, content).map_err(|error| {
         trf(
@@ -321,11 +356,17 @@ fn build_pipewire_filter_config(config: &SoundAppConfig, target: &PipeWireNode) 
             .unwrap_or_default(),
     );
     let graph = build_filter_graph(config);
+    let combined_output_module = if config.combined_output_enabled {
+        build_combined_output_module()
+    } else {
+        String::new()
+    };
 
     format!(
         "# Generated by {APP_NAME}. Changes will be overwritten.\n\
          # Target output: {target_label}\n\
          context.modules = [\n\
+         {combined_output_module}\
          \t{{ name = libpipewire-module-filter-chain\n\
          \t    flags = [ nofail ]\n\
          \t    args = {{\n\
@@ -349,6 +390,43 @@ fn build_pipewire_filter_config(config: &SoundAppConfig, target: &PipeWireNode) 
          \t    }}\n\
          \t}}\n\
          ]\n"
+    )
+}
+
+fn build_combined_output_module() -> String {
+    let combined_description = escape_spa_string(PIPEWIRE_COMBINED_SINK_DESCRIPTION);
+
+    format!(
+        "\t{{ name = libpipewire-module-combine-stream\n\
+         \t    flags = [ nofail ]\n\
+         \t    args = {{\n\
+         \t        combine.mode = sink\n\
+         \t        node.name = \"{PIPEWIRE_COMBINED_SINK_NODE}\"\n\
+         \t        node.description = \"{combined_description}\"\n\
+         \t        combine.latency-compensate = true\n\
+         \t        combine.props = {{\n\
+         \t            audio.position = [ FL FR ]\n\
+         \t            media.class = Audio/Sink\n\
+         \t            node.virtual = true\n\
+         \t        }}\n\
+         \t        stream.rules = [\n\
+         \t            {{\n\
+         \t                matches = [\n\
+         \t                    {{\n\
+         \t                        media.class = \"Audio/Sink\"\n\
+         \t                        node.name = \"!~^({PIPEWIRE_FILTER_MAIN_NODE}|{PIPEWIRE_FILTER_STREAM_NODE}|{PIPEWIRE_COMBINED_SINK_NODE})$\"\n\
+         \t                    }}\n\
+         \t                ]\n\
+         \t                actions = {{\n\
+         \t                    create-stream = {{\n\
+         \t                        audio.position = [ FL FR ]\n\
+         \t                        combine.audio.position = [ FL FR ]\n\
+         \t                    }}\n\
+         \t                }}\n\
+         \t            }}\n\
+         \t        ]\n\
+         \t    }}\n\
+         \t}}\n"
     )
 }
 
@@ -468,22 +546,40 @@ fn wait_for_pipewire_session() -> Result<(), String> {
     ))
 }
 
-fn wait_for_filter_activation() -> Result<(), String> {
+fn wait_for_profile_activation(config: &SoundAppConfig) -> Result<(), String> {
     for _ in 0..30 {
-        if collect_sound_session_state().filter_active {
+        let state = collect_sound_session_state();
+        if state.filter_active && (!config.combined_output_enabled || state.combined_output_active)
+        {
             return Ok(());
         }
         thread::sleep(Duration::from_millis(150));
     }
 
-    Err(tr(
-        "O pipeline do Galaxy Book Sound não apareceu na sessão do PipeWire após aplicar a configuração.",
-    ))
+    if config.combined_output_enabled {
+        Err(tr(
+            "A saída combinada do Galaxy Book Sound não apareceu na sessão do PipeWire após aplicar a configuração.",
+        ))
+    } else {
+        Err(tr(
+            "O pipeline do Galaxy Book Sound não apareceu na sessão do PipeWire após aplicar a configuração.",
+        ))
+    }
 }
 
-fn detect_target_sink() -> Option<PipeWireNode> {
-    let nodes = pipewire_nodes();
-    detect_target_sink_from_nodes(&nodes)
+fn combined_output_sink_node() -> PipeWireNode {
+    PipeWireNode {
+        node_name: Some(PIPEWIRE_COMBINED_SINK_NODE.into()),
+        node_description: Some(PIPEWIRE_COMBINED_SINK_DESCRIPTION.into()),
+        media_class: Some("Audio/Sink".into()),
+        device_profile_description: None,
+    }
+}
+
+fn has_real_output_sink(nodes: &[PipeWireNode]) -> bool {
+    nodes.iter().any(|node| {
+        node.media_class.as_deref() == Some("Audio/Sink") && !is_galaxybook_sound_managed_node(node)
+    })
 }
 
 fn detect_target_sink_from_nodes(nodes: &[PipeWireNode]) -> Option<PipeWireNode> {
@@ -497,7 +593,7 @@ fn detect_target_sink_from_nodes_with_default(
 ) -> Option<PipeWireNode> {
     let speaker = nodes.iter().find(|node| {
         node.media_class.as_deref() == Some("Audio/Sink")
-            && !is_galaxybook_sound_filter_node(node)
+            && !is_galaxybook_sound_managed_node(node)
             && (node.device_profile_description.as_deref() == Some("Speaker")
                 || node
                     .node_description
@@ -517,16 +613,16 @@ fn detect_target_sink_from_nodes_with_default(
     nodes.iter()
         .find(|node| {
             node.media_class.as_deref() == Some("Audio/Sink")
-                && !is_galaxybook_sound_filter_node(node)
+                && !is_galaxybook_sound_managed_node(node)
                 && node.node_name.as_deref() == Some(default_sink_name)
         })
         .cloned()
 }
 
-fn is_galaxybook_sound_filter_node(node: &PipeWireNode) -> bool {
+fn is_galaxybook_sound_managed_node(node: &PipeWireNode) -> bool {
     matches!(
         node.node_name.as_deref(),
-        Some(PIPEWIRE_FILTER_MAIN_NODE | PIPEWIRE_FILTER_STREAM_NODE)
+        Some(PIPEWIRE_FILTER_MAIN_NODE | PIPEWIRE_FILTER_STREAM_NODE | PIPEWIRE_COMBINED_SINK_NODE)
     )
 }
 
@@ -689,6 +785,7 @@ mod tests {
         let mut config = SoundAppConfig {
             selected_profile: AudioProfile::AtmosCompatible,
             atmos_enabled: false,
+            combined_output_enabled: false,
             bands_db: [
                 f64::NAN,
                 -20.0,
@@ -718,6 +815,7 @@ mod tests {
         let mut config = SoundAppConfig {
             selected_profile: AudioProfile::Music,
             atmos_enabled: false,
+            combined_output_enabled: false,
             bands_db: default_bands_for_profile(AudioProfile::Music),
         };
 
@@ -748,6 +846,33 @@ mod tests {
         assert!(conf.contains("\"eq:Out 1\""));
         assert!(conf.contains("\"eq:Out 2\""));
         assert!(conf.contains("filter.smart = true"));
+        assert!(!conf.contains("libpipewire-module-combine-stream"));
+    }
+
+    #[test]
+    fn pipewire_config_with_combined_output_adds_combine_sink() {
+        let config = SoundAppConfig {
+            selected_profile: AudioProfile::Flat,
+            atmos_enabled: false,
+            combined_output_enabled: true,
+            bands_db: default_bands_for_profile(AudioProfile::Flat),
+        };
+        let target = combined_output_sink_node();
+
+        let conf = build_pipewire_filter_config(&config, &target);
+
+        assert!(conf.contains("libpipewire-module-combine-stream"));
+        assert!(conf.contains("combine.mode = sink"));
+        assert!(conf.contains("combine.latency-compensate = true"));
+        assert!(conf.contains("node.name = \"galaxybook_sound_combined_sink\""));
+        assert!(
+            conf.contains(
+                "filter.smart.target = { node.name = \"galaxybook_sound_combined_sink\" }"
+            )
+        );
+        assert!(conf.contains(
+            "node.name = \"!~^(galaxybook_sound_sink|galaxybook_sound_output|galaxybook_sound_combined_sink)$\""
+        ));
     }
 
     #[test]
@@ -755,6 +880,7 @@ mod tests {
         let config = SoundAppConfig {
             selected_profile: AudioProfile::Cinema,
             atmos_enabled: true,
+            combined_output_enabled: false,
             bands_db: default_bands_for_profile(AudioProfile::Cinema),
         };
         let target = PipeWireNode {
@@ -781,6 +907,7 @@ mod tests {
         let config = SoundAppConfig {
             selected_profile: AudioProfile::Flat,
             atmos_enabled: true,
+            combined_output_enabled: false,
             bands_db: [0.0; 10],
         };
 
@@ -789,6 +916,48 @@ mod tests {
         assert_eq!(effective[0], 0.8);
         assert_eq!(effective[1], 1.1);
         assert_eq!(effective[9], 0.6);
+    }
+
+    #[test]
+    fn legacy_config_without_combined_output_defaults_to_disabled() {
+        let config = serde_json::from_str::<SoundAppConfig>(
+            r#"{
+                "selected_profile": "music",
+                "atmos_enabled": true,
+                "bands_db": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            }"#,
+        )
+        .expect("legacy config should deserialize");
+
+        assert!(!config.combined_output_enabled);
+    }
+
+    #[test]
+    fn real_output_detection_ignores_app_managed_sinks() {
+        let managed_nodes = vec![
+            PipeWireNode {
+                node_name: Some(PIPEWIRE_FILTER_MAIN_NODE.into()),
+                node_description: Some("Galaxy Book Sound".into()),
+                media_class: Some("Audio/Sink".into()),
+                device_profile_description: None,
+            },
+            PipeWireNode {
+                node_name: Some(PIPEWIRE_COMBINED_SINK_NODE.into()),
+                node_description: Some(PIPEWIRE_COMBINED_SINK_DESCRIPTION.into()),
+                media_class: Some("Audio/Sink".into()),
+                device_profile_description: None,
+            },
+        ];
+        assert!(!has_real_output_sink(&managed_nodes));
+
+        let mut nodes = managed_nodes;
+        nodes.push(PipeWireNode {
+            node_name: Some("bluez_output.test.a2dp-sink".into()),
+            node_description: Some("Bluetooth speaker".into()),
+            media_class: Some("Audio/Sink".into()),
+            device_profile_description: None,
+        });
+        assert!(has_real_output_sink(&nodes));
     }
 
     #[test]
