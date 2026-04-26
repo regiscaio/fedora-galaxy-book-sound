@@ -19,6 +19,7 @@ impl SoundWindow {
         let window = shell.window;
         let toast_overlay = shell.toast_overlay;
         let navigation_view = shell.navigation_view;
+        let update_button = shell.update_button;
         let refresh_button = shell.refresh_button;
 
         let initial_config = load_sound_app_config();
@@ -33,6 +34,7 @@ impl SoundWindow {
         let instance = Self {
             window,
             toast_overlay,
+            update_button,
             refresh_button,
             apply_equalizer_button: sound_page.apply_equalizer_button,
             reset_equalizer_button: sound_page.reset_equalizer_button,

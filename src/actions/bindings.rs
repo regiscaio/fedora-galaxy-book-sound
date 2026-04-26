@@ -13,6 +13,11 @@ impl SoundWindow {
         });
 
         let this = self.clone();
+        self.update_button.connect_clicked(move |_| {
+            this.install_updates();
+        });
+
+        let this = self.clone();
         self.profile_row.connect_selected_notify(move |row| {
             if this.ui_syncing.get() {
                 return;
@@ -51,6 +56,7 @@ impl SoundWindow {
 
     pub(crate) fn set_controls_sensitive(&self, sensitive: bool) {
         self.refresh_button.set_sensitive(sensitive);
+        self.update_button.set_sensitive(sensitive);
         self.profile_row.set_sensitive(sensitive);
         self.atmos_switch_row.set_sensitive(sensitive);
         self.apply_equalizer_button.set_sensitive(sensitive);

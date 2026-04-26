@@ -24,6 +24,7 @@ pub(crate) struct EqualizerBandControl {
 pub(crate) struct SoundWindow {
     pub(crate) window: adw::ApplicationWindow,
     pub(crate) toast_overlay: adw::ToastOverlay,
+    pub(crate) update_button: gtk::Button,
     pub(crate) refresh_button: gtk::Button,
     pub(crate) apply_equalizer_button: gtk::Button,
     pub(crate) reset_equalizer_button: gtk::Button,
@@ -41,6 +42,7 @@ pub(crate) struct SoundWindow {
 impl SoundWindow {
     pub(crate) fn present(&self) {
         self.window.present();
+        self.refresh_updates();
         self.refresh_state();
     }
 

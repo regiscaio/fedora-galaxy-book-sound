@@ -1,4 +1,5 @@
 mod i18n;
+mod updates;
 
 use std::env;
 use std::fs;
@@ -10,6 +11,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 
 pub use i18n::{init_i18n, tr, tr_mark, trf, trn};
+pub use updates::{install_package_updates, package_update_names};
 
 pub const APP_ID: &str = "com.caioregis.GalaxyBookSound";
 pub const APP_NAME: &str = "Galaxy Book Sound";

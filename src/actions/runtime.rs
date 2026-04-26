@@ -8,12 +8,101 @@ use libadwaita::prelude::*;
 
 use galaxybook_sound::{
     AudioProfile, SoundSessionState, collect_sound_session_state, default_bands_for_profile,
-    save_and_apply_profile, tr, trf,
+    install_package_updates, package_update_names, save_and_apply_profile, tr, trf,
 };
 
 use crate::ui::SoundWindow;
 
+const SOUND_UPDATE_PACKAGES: &[&str] = &[
+    "galaxybook-sound",
+    "galaxybook-max98390-kmod-common",
+    "akmod-galaxybook-max98390",
+];
+
+fn update_button_tooltip(packages: &[String]) -> String {
+    trf(
+        "Baixar e instalar atualizações: {packages}",
+        &[("packages", packages.join(", "))],
+    )
+}
+
 impl SoundWindow {
+    pub(crate) fn refresh_updates(&self) {
+        self.update_button.set_visible(false);
+        self.update_button.set_sensitive(false);
+
+        let (sender, receiver) = mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = sender.send(package_update_names(SOUND_UPDATE_PACKAGES));
+        });
+
+        let this = self.clone();
+        glib::timeout_add_local(Duration::from_millis(150), move || match receiver.try_recv() {
+            Ok(Ok(packages)) => {
+                let has_updates = !packages.is_empty();
+                this.update_button.set_visible(has_updates);
+                this.update_button.set_sensitive(has_updates);
+                if has_updates {
+                    this.update_button
+                        .set_tooltip_text(Some(&update_button_tooltip(&packages)));
+                }
+                glib::ControlFlow::Break
+            }
+            Ok(Err(_error)) => {
+                this.update_button.set_visible(false);
+                this.update_button.set_sensitive(false);
+                glib::ControlFlow::Break
+            }
+            Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+            Err(mpsc::TryRecvError::Disconnected) => {
+                this.update_button.set_visible(false);
+                this.update_button.set_sensitive(false);
+                glib::ControlFlow::Break
+            }
+        });
+    }
+
+    pub(crate) fn install_updates(&self) {
+        if !self.update_button.is_visible() || !self.update_button.is_sensitive() {
+            return;
+        }
+
+        self.update_button.set_sensitive(false);
+        self.toast_overlay.add_toast(adw::Toast::new(&tr(
+            "Baixando e instalando atualizações do Galaxy Book Sound…",
+        )));
+
+        let (sender, receiver) = mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = sender.send(install_package_updates(SOUND_UPDATE_PACKAGES));
+        });
+
+        let this = self.clone();
+        glib::timeout_add_local(Duration::from_millis(150), move || match receiver.try_recv() {
+            Ok(Ok(_output)) => {
+                this.update_button.set_visible(false);
+                this.toast_overlay.add_toast(adw::Toast::new(&tr(
+                    "Atualizações instaladas. Reinicie o app se ele tiver sido atualizado.",
+                )));
+                this.refresh_updates();
+                glib::ControlFlow::Break
+            }
+            Ok(Err(error)) => {
+                this.update_button.set_sensitive(true);
+                this.present_command_result_dialog(&tr("Atualizar pacotes"), &error);
+                glib::ControlFlow::Break
+            }
+            Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+            Err(mpsc::TryRecvError::Disconnected) => {
+                this.update_button.set_sensitive(true);
+                this.toast_overlay.add_toast(adw::Toast::new(&tr(
+                    "Falha ao acompanhar a atualização solicitada.",
+                )));
+                glib::ControlFlow::Break
+            }
+        });
+    }
+
     pub(crate) fn refresh_state(&self) {
         self.refresh_button.set_sensitive(false);
         self.set_controls_sensitive(false);
