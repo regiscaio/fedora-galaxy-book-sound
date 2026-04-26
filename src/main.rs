@@ -24,6 +24,11 @@ fn main() -> glib::ExitCode {
 
     let app = adw::Application::builder().application_id(APP_ID).build();
     app.connect_activate(|app| {
+        if let Some(window) = app.active_window() {
+            window.present();
+            return;
+        }
+
         let window = SoundWindow::new(app);
         window.present();
     });

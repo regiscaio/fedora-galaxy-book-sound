@@ -118,6 +118,10 @@ impl SoundAppConfig {
             self.selected_profile = AudioProfile::Cinema;
             self.atmos_enabled = true;
         }
+
+        for gain in &mut self.bands_db {
+            *gain = clamp_gain(*gain);
+        }
     }
 
     pub fn preset_name(&self) -> String {
@@ -483,10 +487,17 @@ fn detect_target_sink() -> Option<PipeWireNode> {
 }
 
 fn detect_target_sink_from_nodes(nodes: &[PipeWireNode]) -> Option<PipeWireNode> {
+    let default_sink_name = detect_default_output_node_name();
+    detect_target_sink_from_nodes_with_default(nodes, default_sink_name.as_deref())
+}
+
+fn detect_target_sink_from_nodes_with_default(
+    nodes: &[PipeWireNode],
+    default_sink_name: Option<&str>,
+) -> Option<PipeWireNode> {
     let speaker = nodes.iter().find(|node| {
         node.media_class.as_deref() == Some("Audio/Sink")
-            && node.node_name.as_deref() != Some(PIPEWIRE_FILTER_MAIN_NODE)
-            && node.node_name.as_deref() != Some(PIPEWIRE_FILTER_STREAM_NODE)
+            && !is_galaxybook_sound_filter_node(node)
             && (node.device_profile_description.as_deref() == Some("Speaker")
                 || node
                     .node_description
@@ -502,10 +513,21 @@ fn detect_target_sink_from_nodes(nodes: &[PipeWireNode]) -> Option<PipeWireNode>
         return Some(node.clone());
     }
 
-    let default_sink_name = detect_default_output_node_name()?;
+    let default_sink_name = default_sink_name?;
     nodes.iter()
-        .find(|node| node.node_name.as_deref() == Some(default_sink_name.as_str()))
+        .find(|node| {
+            node.media_class.as_deref() == Some("Audio/Sink")
+                && !is_galaxybook_sound_filter_node(node)
+                && node.node_name.as_deref() == Some(default_sink_name)
+        })
         .cloned()
+}
+
+fn is_galaxybook_sound_filter_node(node: &PipeWireNode) -> bool {
+    matches!(
+        node.node_name.as_deref(),
+        Some(PIPEWIRE_FILTER_MAIN_NODE | PIPEWIRE_FILTER_STREAM_NODE)
+    )
 }
 
 fn detect_default_output_node_name() -> Option<String> {
@@ -593,7 +615,11 @@ fn pipewire_filter_config_path() -> PathBuf {
 }
 
 fn clamp_gain(value: f64) -> f64 {
-    value.clamp(-12.0, 12.0)
+    if value.is_finite() {
+        value.clamp(-12.0, 12.0)
+    } else {
+        0.0
+    }
 }
 
 fn escape_spa_string(value: &str) -> String {
@@ -663,13 +689,28 @@ mod tests {
         let mut config = SoundAppConfig {
             selected_profile: AudioProfile::AtmosCompatible,
             atmos_enabled: false,
-            bands_db: [0.0; 10],
+            bands_db: [
+                f64::NAN,
+                -20.0,
+                -12.0,
+                -1.0,
+                0.0,
+                1.0,
+                12.0,
+                20.0,
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+            ],
         };
 
         config.normalize();
 
         assert_eq!(config.selected_profile, AudioProfile::Cinema);
         assert!(config.atmos_enabled);
+        assert_eq!(
+            config.bands_db,
+            [0.0, -12.0, -12.0, -1.0, 0.0, 1.0, 12.0, 12.0, 0.0, 0.0]
+        );
     }
 
     #[test]
@@ -748,5 +789,45 @@ mod tests {
         assert_eq!(effective[0], 0.8);
         assert_eq!(effective[1], 1.1);
         assert_eq!(effective[9], 0.6);
+    }
+
+    #[test]
+    fn target_sink_detection_ignores_own_filter_as_default_sink() {
+        let nodes = vec![
+            PipeWireNode {
+                node_name: Some(PIPEWIRE_FILTER_MAIN_NODE.into()),
+                node_description: Some("Galaxy Book Sound".into()),
+                media_class: Some("Audio/Sink".into()),
+                device_profile_description: None,
+            },
+            PipeWireNode {
+                node_name: Some("alsa_output.hdmi".into()),
+                node_description: Some("External HDMI".into()),
+                media_class: Some("Audio/Sink".into()),
+                device_profile_description: None,
+            },
+        ];
+
+        assert!(
+            detect_target_sink_from_nodes_with_default(&nodes, Some(PIPEWIRE_FILTER_MAIN_NODE))
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn target_sink_detection_uses_external_default_when_speaker_is_not_identified() {
+        let nodes = vec![PipeWireNode {
+            node_name: Some("alsa_output.usb".into()),
+            node_description: Some("USB Audio".into()),
+            media_class: Some("Audio/Sink".into()),
+            device_profile_description: None,
+        }];
+
+        let target = detect_target_sink_from_nodes_with_default(&nodes, Some("alsa_output.usb"));
+
+        assert_eq!(
+            target.and_then(|node| node.node_name),
+            Some("alsa_output.usb".to_string())
+        );
     }
 }

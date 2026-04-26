@@ -214,27 +214,45 @@ impl SoundWindow {
     }
 
     pub(crate) fn apply_current_equalizer(&self) {
+        let config = self.sound_config.borrow().clone();
+
+        self.refresh_button.set_sensitive(false);
         self.set_controls_sensitive(false);
         self.engine_status_row
             .set_subtitle(&tr("Aplicando a nova curva e reiniciando a sessão de áudio…"));
 
-        let result = save_and_apply_profile(&self.sound_config.borrow().clone());
+        let (sender, receiver) = mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = sender.send(save_and_apply_profile(&config));
+        });
 
-        match result {
-            Ok(preset_name) => {
-                self.update_equalizer_summary();
-                self.toast_overlay.add_toast(adw::Toast::new(&trf(
+        let this = self.clone();
+        glib::timeout_add_local(Duration::from_millis(75), move || match receiver.try_recv() {
+            Ok(Ok(preset_name)) => {
+                this.update_equalizer_summary();
+                this.toast_overlay.add_toast(adw::Toast::new(&trf(
                     "Perfil aplicado no PipeWire: {preset}",
                     &[("preset", preset_name)],
                 )));
-                self.refresh_state();
+                this.refresh_state();
+                glib::ControlFlow::Break
             }
-            Err(error) => {
-                self.refresh_button.set_sensitive(true);
-                self.set_controls_sensitive(true);
-                self.present_command_result_dialog(&tr("Aplicar"), &error);
+            Ok(Err(error)) => {
+                this.refresh_button.set_sensitive(true);
+                this.set_controls_sensitive(true);
+                this.present_command_result_dialog(&tr("Aplicar"), &error);
+                glib::ControlFlow::Break
             }
-        }
+            Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+            Err(mpsc::TryRecvError::Disconnected) => {
+                this.refresh_button.set_sensitive(true);
+                this.set_controls_sensitive(true);
+                this.toast_overlay.add_toast(adw::Toast::new(&tr(
+                    "Falha ao acompanhar a aplicação do perfil de áudio.",
+                )));
+                glib::ControlFlow::Break
+            }
+        });
     }
 
     pub(crate) fn update_equalizer_summary(&self) {
