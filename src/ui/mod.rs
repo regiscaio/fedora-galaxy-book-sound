@@ -114,10 +114,7 @@ where
     row
 }
 
-pub(crate) fn build_about_summary_row(
-    app_name: &str,
-    description: &str,
-) -> gtk::ListBoxRow {
+pub(crate) fn build_about_summary_row(app_name: &str, description: &str) -> gtk::ListBoxRow {
     let row = gtk::ListBoxRow::new();
     row.set_activatable(false);
     row.set_selectable(false);
@@ -149,9 +146,10 @@ pub(crate) fn build_about_summary_row(
     let version_label = gtk::Label::new(None);
     version_label.set_markup(&format!(
         "<span alpha='55%' size='small'>{}</span>",
-        glib::markup_escape_text(
-            &trf("Versão {version}", &[("version", env!("APP_VERSION").to_string())]),
-        )
+        glib::markup_escape_text(&trf(
+            "Versão {version}",
+            &[("version", env!("APP_VERSION").to_string())]
+        ),)
     ));
     version_label.set_xalign(0.0);
 
@@ -207,15 +205,21 @@ pub(crate) fn build_about_details_subpage() -> adw::NavigationPage {
     for (title, subtitle) in [
         (
             tr_mark("Objetivo"),
-            tr("Ajudar você a deixar o áudio do Galaxy Book mais agradável no uso diário, com perfis prontos e espaço para ajuste fino quando fizer sentido."),
+            tr(
+                "Ajudar você a deixar o áudio do Galaxy Book mais agradável no uso diário, com perfis prontos e espaço para ajuste fino quando fizer sentido.",
+            ),
         ),
         (
             tr_mark("Módulo disponível"),
-            tr("Perfis locais, equalizador de 10 bandas, modo Atmos compatível, saída combinada e aplicação direta na sessão via PipeWire."),
+            tr(
+                "Perfis locais, equalizador de 10 bandas, modo Atmos compatível, saída combinada e aplicação direta na sessão via PipeWire.",
+            ),
         ),
         (
             tr_mark("Limite atual"),
-            tr("Diagnóstico de hardware, instalação do stack e correções de speaker ficam no Galaxy Book Setup. Aqui o foco é só o ajuste de som, sem Dolby Atmos proprietário."),
+            tr(
+                "Diagnóstico de hardware, instalação do stack e correções de speaker ficam no Galaxy Book Setup. Aqui o foco é só o ajuste de som, sem Dolby Atmos proprietário.",
+            ),
         ),
     ] {
         let row = adw::ActionRow::builder()

@@ -42,8 +42,11 @@ pub enum AudioProfile {
 
 impl AudioProfile {
     pub fn selectable() -> &'static [Self] {
-        const PROFILES: [AudioProfile; 3] =
-            [AudioProfile::Flat, AudioProfile::Music, AudioProfile::Cinema];
+        const PROFILES: [AudioProfile; 3] = [
+            AudioProfile::Flat,
+            AudioProfile::Music,
+            AudioProfile::Cinema,
+        ];
         &PROFILES
     }
 
@@ -438,8 +441,7 @@ fn build_filter_graph(config: &SoundAppConfig) -> String {
         .map(|(frequency_hz, gain_db)| {
             format!(
                 "\t\t\t\t\t{{ type = bq_peaking freq = {:.1} gain = {:.2} q = 1.0 }}",
-                *frequency_hz as f64,
-                gain_db
+                *frequency_hz as f64, gain_db
             )
         })
         .collect::<Vec<_>>()
@@ -469,7 +471,11 @@ fn build_filter_graph(config: &SoundAppConfig) -> String {
             "\t\t\t\t\"widen_l:Out\"\n\t\t\t\t\"widen_r:Out\"".to_string(),
         )
     } else {
-        (String::new(), String::new(), "\t\t\t\t\"eq:Out 1\"\n\t\t\t\t\"eq:Out 2\"".to_string())
+        (
+            String::new(),
+            String::new(),
+            "\t\t\t\t\"eq:Out 1\"\n\t\t\t\t\"eq:Out 2\"".to_string(),
+        )
     };
 
     format!(
@@ -610,7 +616,8 @@ fn detect_target_sink_from_nodes_with_default(
     }
 
     let default_sink_name = default_sink_name?;
-    nodes.iter()
+    nodes
+        .iter()
         .find(|node| {
             node.media_class.as_deref() == Some("Audio/Sink")
                 && !is_galaxybook_sound_managed_node(node)
@@ -640,10 +647,7 @@ fn detect_default_output_description() -> Option<String> {
 fn parse_pwctl_property(output: &str, key: &str) -> Option<String> {
     output.lines().find_map(|line| {
         let trimmed = line.trim();
-        let candidate = trimmed
-            .strip_prefix('*')
-            .map(str::trim)
-            .unwrap_or(trimmed);
+        let candidate = trimmed.strip_prefix('*').map(str::trim).unwrap_or(trimmed);
         let prefix = format!("{key} = \"");
         candidate
             .strip_prefix(&prefix)

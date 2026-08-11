@@ -1,4 +1,8 @@
-use std::{env, fs, path::{Path, PathBuf}, process::Command};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 fn version_from_commit_count(commit_count: u64) -> String {
     format!("1.{:02}.{:02}", commit_count / 100, commit_count % 100)
@@ -31,11 +35,11 @@ fn configure_git_rerun() {
     let head_path = git_dir.join("HEAD");
     println!("cargo:rerun-if-changed={}", head_path.display());
 
-    if let Ok(head) = fs::read_to_string(&head_path) {
-        if let Some(reference) = head.trim().strip_prefix("ref: ") {
-            let ref_path = git_dir.join(reference);
-            println!("cargo:rerun-if-changed={}", ref_path.display());
-        }
+    if let Ok(head) = fs::read_to_string(&head_path)
+        && let Some(reference) = head.trim().strip_prefix("ref: ")
+    {
+        let ref_path = git_dir.join(reference);
+        println!("cargo:rerun-if-changed={}", ref_path.display());
     }
 }
 

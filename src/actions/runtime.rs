@@ -37,27 +37,29 @@ impl SoundWindow {
         });
 
         let this = self.clone();
-        glib::timeout_add_local(Duration::from_millis(150), move || match receiver.try_recv() {
-            Ok(Ok(packages)) => {
-                let has_updates = !packages.is_empty();
-                this.update_button.set_visible(has_updates);
-                this.update_button.set_sensitive(has_updates);
-                if has_updates {
-                    this.update_button
-                        .set_tooltip_text(Some(&update_button_tooltip(&packages)));
+        glib::timeout_add_local(Duration::from_millis(150), move || {
+            match receiver.try_recv() {
+                Ok(Ok(packages)) => {
+                    let has_updates = !packages.is_empty();
+                    this.update_button.set_visible(has_updates);
+                    this.update_button.set_sensitive(has_updates);
+                    if has_updates {
+                        this.update_button
+                            .set_tooltip_text(Some(&update_button_tooltip(&packages)));
+                    }
+                    glib::ControlFlow::Break
                 }
-                glib::ControlFlow::Break
-            }
-            Ok(Err(_error)) => {
-                this.update_button.set_visible(false);
-                this.update_button.set_sensitive(false);
-                glib::ControlFlow::Break
-            }
-            Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
-            Err(mpsc::TryRecvError::Disconnected) => {
-                this.update_button.set_visible(false);
-                this.update_button.set_sensitive(false);
-                glib::ControlFlow::Break
+                Ok(Err(_error)) => {
+                    this.update_button.set_visible(false);
+                    this.update_button.set_sensitive(false);
+                    glib::ControlFlow::Break
+                }
+                Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    this.update_button.set_visible(false);
+                    this.update_button.set_sensitive(false);
+                    glib::ControlFlow::Break
+                }
             }
         });
     }
@@ -78,27 +80,29 @@ impl SoundWindow {
         });
 
         let this = self.clone();
-        glib::timeout_add_local(Duration::from_millis(150), move || match receiver.try_recv() {
-            Ok(Ok(_output)) => {
-                this.update_button.set_visible(false);
-                this.toast_overlay.add_toast(adw::Toast::new(&tr(
-                    "Atualizações instaladas. Reinicie o app se ele tiver sido atualizado.",
-                )));
-                this.refresh_updates();
-                glib::ControlFlow::Break
-            }
-            Ok(Err(error)) => {
-                this.update_button.set_sensitive(true);
-                this.present_command_result_dialog(&tr("Atualizar pacotes"), &error);
-                glib::ControlFlow::Break
-            }
-            Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
-            Err(mpsc::TryRecvError::Disconnected) => {
-                this.update_button.set_sensitive(true);
-                this.toast_overlay.add_toast(adw::Toast::new(&tr(
-                    "Falha ao acompanhar a atualização solicitada.",
-                )));
-                glib::ControlFlow::Break
+        glib::timeout_add_local(Duration::from_millis(150), move || {
+            match receiver.try_recv() {
+                Ok(Ok(_output)) => {
+                    this.update_button.set_visible(false);
+                    this.toast_overlay.add_toast(adw::Toast::new(&tr(
+                        "Atualizações instaladas. Reinicie o app se ele tiver sido atualizado.",
+                    )));
+                    this.refresh_updates();
+                    glib::ControlFlow::Break
+                }
+                Ok(Err(error)) => {
+                    this.update_button.set_sensitive(true);
+                    this.present_command_result_dialog(&tr("Atualizar pacotes"), &error);
+                    glib::ControlFlow::Break
+                }
+                Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    this.update_button.set_sensitive(true);
+                    this.toast_overlay.add_toast(adw::Toast::new(&tr(
+                        "Falha ao acompanhar a atualização solicitada.",
+                    )));
+                    glib::ControlFlow::Break
+                }
             }
         });
     }
@@ -118,18 +122,21 @@ impl SoundWindow {
         });
 
         let this = self.clone();
-        glib::timeout_add_local(Duration::from_millis(75), move || match receiver.try_recv() {
-            Ok(state) => {
-                this.apply_session_state(state);
-                glib::ControlFlow::Break
-            }
-            Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
-            Err(mpsc::TryRecvError::Disconnected) => {
-                this.refresh_button.set_sensitive(true);
-                this.set_controls_sensitive(true);
-                this.toast_overlay
-                    .add_toast(adw::Toast::new(&tr("Falha ao atualizar o estado do áudio.")));
-                glib::ControlFlow::Break
+        glib::timeout_add_local(Duration::from_millis(75), move || {
+            match receiver.try_recv() {
+                Ok(state) => {
+                    this.apply_session_state(state);
+                    glib::ControlFlow::Break
+                }
+                Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    this.refresh_button.set_sensitive(true);
+                    this.set_controls_sensitive(true);
+                    this.toast_overlay.add_toast(adw::Toast::new(&tr(
+                        "Falha ao atualizar o estado do áudio.",
+                    )));
+                    glib::ControlFlow::Break
+                }
             }
         });
     }
@@ -148,7 +155,9 @@ impl SoundWindow {
                 None => tr("Pipeline nativo do app ativo na sessão atual."),
             }
         } else if state.config_present {
-            tr("Configuração local encontrada, mas o pipeline ainda não foi carregado na sessão atual.")
+            tr(
+                "Configuração local encontrada, mas o pipeline ainda não foi carregado na sessão atual.",
+            )
         } else {
             tr("Nenhum pipeline do app foi aplicado ainda.")
         };
@@ -235,8 +244,9 @@ impl SoundWindow {
 
         self.refresh_button.set_sensitive(false);
         self.set_controls_sensitive(false);
-        self.engine_status_row
-            .set_subtitle(&tr("Aplicando a nova curva e reiniciando a sessão de áudio…"));
+        self.engine_status_row.set_subtitle(&tr(
+            "Aplicando a nova curva e reiniciando a sessão de áudio…",
+        ));
 
         let (sender, receiver) = mpsc::channel();
         std::thread::spawn(move || {
@@ -244,30 +254,32 @@ impl SoundWindow {
         });
 
         let this = self.clone();
-        glib::timeout_add_local(Duration::from_millis(75), move || match receiver.try_recv() {
-            Ok(Ok(preset_name)) => {
-                this.update_equalizer_summary();
-                this.toast_overlay.add_toast(adw::Toast::new(&trf(
-                    "Perfil aplicado no PipeWire: {preset}",
-                    &[("preset", preset_name)],
-                )));
-                this.refresh_state();
-                glib::ControlFlow::Break
-            }
-            Ok(Err(error)) => {
-                this.refresh_button.set_sensitive(true);
-                this.set_controls_sensitive(true);
-                this.present_command_result_dialog(&tr("Aplicar"), &error);
-                glib::ControlFlow::Break
-            }
-            Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
-            Err(mpsc::TryRecvError::Disconnected) => {
-                this.refresh_button.set_sensitive(true);
-                this.set_controls_sensitive(true);
-                this.toast_overlay.add_toast(adw::Toast::new(&tr(
-                    "Falha ao acompanhar a aplicação do perfil de áudio.",
-                )));
-                glib::ControlFlow::Break
+        glib::timeout_add_local(Duration::from_millis(75), move || {
+            match receiver.try_recv() {
+                Ok(Ok(preset_name)) => {
+                    this.update_equalizer_summary();
+                    this.toast_overlay.add_toast(adw::Toast::new(&trf(
+                        "Perfil aplicado no PipeWire: {preset}",
+                        &[("preset", preset_name)],
+                    )));
+                    this.refresh_state();
+                    glib::ControlFlow::Break
+                }
+                Ok(Err(error)) => {
+                    this.refresh_button.set_sensitive(true);
+                    this.set_controls_sensitive(true);
+                    this.present_command_result_dialog(&tr("Aplicar"), &error);
+                    glib::ControlFlow::Break
+                }
+                Err(mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    this.refresh_button.set_sensitive(true);
+                    this.set_controls_sensitive(true);
+                    this.toast_overlay.add_toast(adw::Toast::new(&tr(
+                        "Falha ao acompanhar a aplicação do perfil de áudio.",
+                    )));
+                    glib::ControlFlow::Break
+                }
             }
         });
     }
