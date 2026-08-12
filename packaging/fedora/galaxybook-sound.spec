@@ -24,9 +24,12 @@ BuildRequires:  pkgconfig(gtk4)
 BuildRequires:  pkgconfig(libadwaita-1)
 BuildRequires:  rust
 
+Requires:       dnf5
 Requires:       pipewire
+Requires:       pipewire-pulseaudio
 Requires:       pipewire-utils
 Requires:       polkit
+Requires:       rpm
 Requires:       systemd
 Requires:       wireplumber
 

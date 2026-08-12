@@ -30,8 +30,14 @@ const PIPEWIRE_FILTER_NAME: &str = "galaxybook-sound";
 const PIPEWIRE_COMBINED_SINK_NODE: &str = "galaxybook_sound_combined_sink";
 const PIPEWIRE_COMBINED_SINK_DESCRIPTION: &str = "Galaxy Book Sound - Saída combinada";
 const PIPEWIRE_FILTER_CONFIG_NAME: &str = "99-galaxybook-sound.conf";
-const RESTART_AUDIO_STACK_COMMAND: &str =
-    "systemctl --user restart wireplumber.service pipewire.service pipewire-pulse.service";
+const PW_DUMP_COMMAND: &str = "/usr/bin/pw-dump";
+const SYSTEMCTL_COMMAND: &str = "/usr/bin/systemctl";
+const WPCTL_COMMAND: &str = "/usr/bin/wpctl";
+const AUDIO_STACK_UNITS: &[&str] = &[
+    "wireplumber.service",
+    "pipewire.service",
+    "pipewire-pulse.service",
+];
 const SESSION_RETRY_ATTEMPTS: usize = 60;
 const SESSION_RETRY_DELAY: Duration = Duration::from_millis(250);
 const STATE_QUERY_ATTEMPTS: usize = 3;
@@ -787,8 +793,9 @@ fn restart_audio_stack() -> Result<(), String> {
         ));
     }
 
-    let output = Command::new("bash")
-        .args(["-lc", RESTART_AUDIO_STACK_COMMAND])
+    let output = Command::new(SYSTEMCTL_COMMAND)
+        .args(["--user", "restart"])
+        .args(AUDIO_STACK_UNITS)
         .output()
         .map_err(|error| {
             trf(
@@ -1114,7 +1121,7 @@ fn is_galaxybook_sound_managed_node(node: &PipeWireNode) -> bool {
 }
 
 fn detect_default_output_node_name() -> Option<String> {
-    let inspect = command_text("wpctl", &["inspect", "@DEFAULT_AUDIO_SINK@"]).ok()?;
+    let inspect = command_text(WPCTL_COMMAND, &["inspect", "@DEFAULT_AUDIO_SINK@"]).ok()?;
     parse_pwctl_property(&inspect, "node.name")
 }
 
@@ -1176,7 +1183,7 @@ fn pipewire_graph_and_target_with_retry(
 }
 
 fn pipewire_graph() -> Result<PipeWireGraph, String> {
-    let output = Command::new("pw-dump")
+    let output = Command::new(PW_DUMP_COMMAND)
         .output()
         .map_err(|error| format!("failed to start pw-dump: {error}"))?;
     if !output.status.success() {
@@ -1333,7 +1340,7 @@ fn systemd_available() -> bool {
         return false;
     }
 
-    Command::new("systemctl")
+    Command::new(SYSTEMCTL_COMMAND)
         .arg("--version")
         .stdout(Stdio::null())
         .stderr(Stdio::null())

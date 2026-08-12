@@ -3,6 +3,8 @@ use std::process::{Command, Stdio};
 use crate::{tr, trf};
 
 const DNF_COMMAND: &str = "/usr/bin/dnf";
+const PKEXEC_COMMAND: &str = "/usr/bin/pkexec";
+const RPM_COMMAND: &str = "/usr/bin/rpm";
 
 fn command_output_text(stdout: &[u8], stderr: &[u8]) -> String {
     let mut text = String::new();
@@ -23,7 +25,7 @@ fn installed_package_names(packages: &[&str]) -> Vec<String> {
     packages
         .iter()
         .filter(|package| {
-            Command::new("rpm")
+            Command::new(RPM_COMMAND)
                 .args(["-q", *package])
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
@@ -104,7 +106,7 @@ pub fn install_package_updates(packages: &[&str]) -> Result<String, String> {
         .map(String::as_str)
         .collect::<Vec<_>>();
 
-    let output = Command::new("pkexec")
+    let output = Command::new(PKEXEC_COMMAND)
         .arg(DNF_COMMAND)
         .arg("upgrade")
         .arg("-y")
