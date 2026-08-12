@@ -176,6 +176,10 @@ struct PipeWireNode {
     node_link_group: Option<String>,
     object_path: Option<String>,
     device_id: Option<u32>,
+    device_api: Option<String>,
+    device_bus: Option<String>,
+    device_name: Option<String>,
+    device_bus_path: Option<String>,
     node_virtual: bool,
 }
 
@@ -191,6 +195,14 @@ struct PipeWireLink {
 struct PipeWireGraph {
     nodes: Vec<PipeWireNode>,
     links: Vec<PipeWireLink>,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct PipeWireDeviceMetadata {
+    api: Option<String>,
+    bus: Option<String>,
+    name: Option<String>,
+    bus_path: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -1002,16 +1014,77 @@ fn detect_target_sink_from_nodes_with_default(
 }
 
 fn is_internal_speaker_output(node: &PipeWireNode) -> bool {
-    is_physical_output(node)
-        && [
-            node.device_profile_description.as_deref(),
-            node.node_description.as_deref(),
-            node.node_nick.as_deref(),
-            node.node_name.as_deref(),
-        ]
-        .into_iter()
+    if !is_physical_output(node) {
+        return false;
+    }
+
+    let hardware_identifiers = [
+        node.node_name.as_deref(),
+        node.object_path.as_deref(),
+        node.device_name.as_deref(),
+        node.device_bus_path.as_deref(),
+    ];
+    let is_usb = node
+        .device_bus
+        .as_deref()
+        .is_some_and(|bus| bus.eq_ignore_ascii_case("usb"))
+        || hardware_identifiers
+            .iter()
+            .flatten()
+            .any(|value| value.to_ascii_lowercase().contains("usb"));
+    if is_usb {
+        return false;
+    }
+
+    let profile_is_speaker = node
+        .device_profile_description
+        .as_deref()
+        .is_some_and(|profile| profile.trim().eq_ignore_ascii_case("Speaker"));
+    let name_is_speaker_sink = node
+        .node_name
+        .as_deref()
+        .is_some_and(|name| name.to_ascii_lowercase().contains("__speaker__sink"));
+    let alsa_backed = node
+        .device_api
+        .as_deref()
+        .is_some_and(|api| api.eq_ignore_ascii_case("alsa"))
+        || node
+            .node_name
+            .as_deref()
+            .is_some_and(|name| name.starts_with("alsa_output."));
+    let pci_backed = node
+        .device_bus
+        .as_deref()
+        .is_some_and(|bus| bus.eq_ignore_ascii_case("pci"))
+        || node
+            .device_name
+            .as_deref()
+            .is_some_and(|name| name.starts_with("alsa_card.pci-"))
+        || node
+            .node_name
+            .as_deref()
+            .is_some_and(|name| name.starts_with("alsa_output.pci-"));
+    let platform_backed = node
+        .device_name
+        .as_deref()
+        .is_some_and(|name| name.starts_with("alsa_card.platform-"))
+        || node
+            .node_name
+            .as_deref()
+            .is_some_and(|name| name.starts_with("alsa_output.platform-"));
+    let sof_or_platform_path = hardware_identifiers
+        .iter()
         .flatten()
-        .any(|value| value.to_ascii_lowercase().contains("speaker"))
+        .map(|value| value.to_ascii_lowercase())
+        .any(|value| {
+            value.contains("platform-") || value.contains("sof") || value.contains("skl_hda_dsp")
+        });
+
+    profile_is_speaker
+        && name_is_speaker_sink
+        && alsa_backed
+        && (pci_backed || platform_backed)
+        && sof_or_platform_path
 }
 
 fn is_physical_output(node: &PipeWireNode) -> bool {
@@ -1117,27 +1190,53 @@ fn pipewire_graph() -> Result<PipeWireGraph, String> {
 
 fn pipewire_graph_from_objects(objects: Vec<PipeWireDumpObject>) -> Result<PipeWireGraph, String> {
     let mut graph = PipeWireGraph::default();
+    let device_metadata = objects
+        .iter()
+        .filter_map(|object| {
+            if object.object_type != "PipeWire:Interface:Device" {
+                return None;
+            }
+            let info = object.info.as_ref()?;
+            Some((
+                object.id,
+                PipeWireDeviceMetadata {
+                    api: property_string(&info.props, "device.api"),
+                    bus: property_string(&info.props, "device.bus"),
+                    name: property_string(&info.props, "device.name"),
+                    bus_path: property_string(&info.props, "device.bus-path"),
+                },
+            ))
+        })
+        .collect::<HashMap<_, _>>();
 
     for object in objects {
         let Some(info) = object.info else {
             continue;
         };
         match object.object_type.as_str() {
-            "PipeWire:Interface:Node" => graph.nodes.push(PipeWireNode {
-                id: object.id,
-                node_name: property_string(&info.props, "node.name"),
-                node_description: property_string(&info.props, "node.description"),
-                node_nick: property_string(&info.props, "node.nick"),
-                media_class: property_string(&info.props, "media.class"),
-                device_profile_description: property_string(
-                    &info.props,
-                    "device.profile.description",
-                ),
-                node_link_group: property_string(&info.props, "node.link-group"),
-                object_path: property_string(&info.props, "object.path"),
-                device_id: property_u32(&info.props, "device.id"),
-                node_virtual: property_bool(&info.props, "node.virtual").unwrap_or(false),
-            }),
+            "PipeWire:Interface:Node" => {
+                let device_id = property_u32(&info.props, "device.id");
+                let device = device_id.and_then(|id| device_metadata.get(&id));
+                graph.nodes.push(PipeWireNode {
+                    id: object.id,
+                    node_name: property_string(&info.props, "node.name"),
+                    node_description: property_string(&info.props, "node.description"),
+                    node_nick: property_string(&info.props, "node.nick"),
+                    media_class: property_string(&info.props, "media.class"),
+                    device_profile_description: property_string(
+                        &info.props,
+                        "device.profile.description",
+                    ),
+                    node_link_group: property_string(&info.props, "node.link-group"),
+                    object_path: property_string(&info.props, "object.path"),
+                    device_id,
+                    device_api: device.and_then(|metadata| metadata.api.clone()),
+                    device_bus: device.and_then(|metadata| metadata.bus.clone()),
+                    device_name: device.and_then(|metadata| metadata.name.clone()),
+                    device_bus_path: device.and_then(|metadata| metadata.bus_path.clone()),
+                    node_virtual: property_bool(&info.props, "node.virtual").unwrap_or(false),
+                });
+            }
             "PipeWire:Interface:Link" => {
                 if let (Some(output_node_id), Some(input_node_id)) =
                     (info.output_node_id, info.input_node_id)
@@ -1279,7 +1378,29 @@ mod tests {
             device_profile_description: Some("Speaker".into()),
             object_path: Some("alsa:pcm:0:playback".into()),
             device_id: Some(1),
+            device_api: Some("alsa".into()),
+            device_bus: Some("pci".into()),
+            device_name: Some("alsa_card.pci-test-platform-sof".into()),
+            device_bus_path: Some("pci-test-platform-sof".into()),
             node_virtual: false,
+            ..PipeWireNode::default()
+        }
+    }
+
+    fn test_usb_speakers_node(id: u32) -> PipeWireNode {
+        PipeWireNode {
+            id,
+            node_name: Some("alsa_output.usb-Vendor_USB_Speakers.analog-stereo".into()),
+            node_description: Some("USB Speakers".into()),
+            node_nick: Some("Speakers".into()),
+            media_class: Some("Audio/Sink".into()),
+            device_profile_description: Some("Speaker".into()),
+            object_path: Some("alsa:pcm:2:playback".into()),
+            device_id: Some(2),
+            device_api: Some("alsa".into()),
+            device_bus: Some("usb".into()),
+            device_name: Some("alsa_card.usb-Vendor_USB_Speakers".into()),
+            device_bus_path: Some("usb-0000:00:14.0-1".into()),
             ..PipeWireNode::default()
         }
     }
@@ -1308,7 +1429,7 @@ mod tests {
                     "Stream/Output/Audio",
                     Some("filter-1"),
                 ),
-                test_speaker_node(12, "alsa_output.test.Speaker__sink"),
+                test_speaker_node(12, "alsa_output.test.HiFi__Speaker__sink"),
             ],
             links: Vec::new(),
         }
@@ -1485,6 +1606,40 @@ mod tests {
     }
 
     #[test]
+    fn internal_speaker_detection_requires_built_in_pci_or_platform_audio() {
+        let internal = test_speaker_node(
+            1,
+            "alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__Speaker__sink",
+        );
+        assert!(is_internal_speaker_output(&internal));
+
+        let usb_speakers = test_usb_speakers_node(2);
+        assert!(is_physical_output(&usb_speakers));
+        assert!(!is_internal_speaker_output(&usb_speakers));
+
+        let hdmi = PipeWireNode {
+            id: 3,
+            node_name: Some(
+                "alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__HDMI1__sink"
+                    .into(),
+            ),
+            node_description: Some("Built-in HDMI".into()),
+            node_nick: Some("HDMI 1".into()),
+            media_class: Some("Audio/Sink".into()),
+            device_profile_description: Some("HDMI / DisplayPort 1 Output".into()),
+            object_path: Some("alsa:acp:sofhdadsp:2:playback".into()),
+            device_id: Some(1),
+            device_api: Some("alsa".into()),
+            device_bus: Some("pci".into()),
+            device_name: Some("alsa_card.pci-0000_00_1f.3-platform-skl_hda_dsp_generic".into()),
+            device_bus_path: Some("pci-0000:00:1f.3-platform-skl_hda_dsp_generic".into()),
+            ..PipeWireNode::default()
+        };
+        assert!(is_physical_output(&hdmi));
+        assert!(!is_internal_speaker_output(&hdmi));
+    }
+
+    #[test]
     fn target_sink_detection_ignores_own_filter_as_default_sink() {
         let nodes = vec![
             PipeWireNode {
@@ -1511,17 +1666,27 @@ mod tests {
 
     #[test]
     fn target_sink_detection_refuses_external_default_without_internal_speaker() {
-        let nodes = vec![PipeWireNode {
-            node_name: Some("alsa_output.usb".into()),
-            node_description: Some("USB Audio".into()),
-            media_class: Some("Audio/Sink".into()),
-            device_id: Some(2),
-            ..PipeWireNode::default()
-        }];
+        let usb_speakers = test_usb_speakers_node(2);
+        let usb_name = usb_speakers.node_name.clone().expect("USB node name");
+        let nodes = vec![usb_speakers];
 
-        let target = detect_target_sink_from_nodes_with_default(&nodes, Some("alsa_output.usb"));
+        let target = detect_target_sink_from_nodes_with_default(&nodes, Some(&usb_name));
 
         assert!(target.is_none());
+    }
+
+    #[test]
+    fn target_sink_detection_ignores_usb_speakers_even_when_they_are_default() {
+        let usb_speakers = test_usb_speakers_node(2);
+        let usb_name = usb_speakers.node_name.clone().expect("USB node name");
+        let internal_name =
+            "alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__Speaker__sink";
+        let nodes = vec![usb_speakers, test_speaker_node(3, internal_name)];
+
+        let target = detect_target_sink_from_nodes_with_default(&nodes, Some(&usb_name))
+            .expect("built-in speaker should be selected");
+
+        assert_eq!(target.node_name.as_deref(), Some(internal_name));
     }
 
     #[test]
@@ -1617,6 +1782,16 @@ mod tests {
         let objects = serde_json::from_str::<Vec<PipeWireDumpObject>>(
             r#"[
                 {
+                    "id": 7,
+                    "type": "PipeWire:Interface:Device",
+                    "info": {"props": {
+                        "device.name": "alsa_card.pci-0000_00_1f.3-platform-skl_hda_dsp_generic",
+                        "device.api": "alsa",
+                        "device.bus": "pci",
+                        "device.bus-path": "pci-0000:00:1f.3-platform-skl_hda_dsp_generic"
+                    }}
+                },
+                {
                     "id": 40,
                     "type": "PipeWire:Interface:Node",
                     "info": {"props": {
@@ -1630,9 +1805,11 @@ mod tests {
                     "id": 68,
                     "type": "PipeWire:Interface:Node",
                     "info": {"props": {
-                        "node.name": "alsa_output.test.Speaker__sink",
+                        "node.name": "alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__Speaker__sink",
                         "node.description": "Notebook Speaker",
                         "media.class": "Audio/Sink",
+                        "device.profile.description": "Speaker",
+                        "object.path": "alsa:acp:sofhdadsp:3:playback",
                         "device.id": 7,
                         "node.virtual": false
                     }}
@@ -1657,6 +1834,8 @@ mod tests {
         assert_eq!(graph.links.len(), 1);
         assert!(graph.nodes[0].node_virtual);
         assert_eq!(graph.nodes[1].device_id, Some(7));
+        assert_eq!(graph.nodes[1].device_bus.as_deref(), Some("pci"));
+        assert!(is_internal_speaker_output(&graph.nodes[1]));
         assert!(graph.has_valid_link(40, 68));
     }
 
