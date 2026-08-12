@@ -38,6 +38,11 @@ profiles, and the `Atmos compatible` mode for the internal speakers. Guided
 installation, environment validation, and broader notebook diagnostics live in
 [`fedora-galaxy-book-setup`](https://github.com/regiscaio/fedora-galaxy-book-setup).
 
+This app's updater checks and upgrades only the `galaxybook-sound` package.
+MAX98390 driver installation, updates, rebuilds for new kernels, and boot-time
+diagnostics belong to `Galaxy Book Setup`; this app does not alter the driver
+lifecycle.
+
 ## Current interface
 
 ### Main screen
@@ -59,10 +64,12 @@ The project delivers:
 - `Flat`, `Music`, and `Cinema` base profiles;
 - a 10-band equalizer with manual adjustment;
 - an `Atmos compatible` mode that can be enabled and disabled from the app;
-- a `Combined output` option to duplicate processed audio to all available
-  outputs;
+- a `Combined output` option that routes processed audio through a virtual
+  sink only to the revalidated physical internal output;
 - a single-page UI following the GNOME preferences pattern;
 - app-owned persisted configuration for the internal audio flow.
+- session-graph validation through `pw-dump`, including the filter input and
+  output nodes, the physical internal output, and the links between them.
 
 This project does **not** provide:
 
@@ -92,8 +99,9 @@ internal speakers. In practice, that means:
 Technically, this is currently done with an app-owned `filter-chain` under
 `~/.config/pipewire/pipewire.conf.d/`, applied through WirePlumber `smart
 filters`. When `Combined output` is enabled, the app also creates a virtual
-sink with `libpipewire-module-combine-stream` and uses it as the pipeline
-target.
+sink with `libpipewire-module-combine-stream`, uses it as the pipeline target,
+and creates a stream only for the revalidated physical internal `node.name` —
+never for HDMI, Bluetooth, or USB through a generic match.
 
 ## Build and packaging
 
@@ -136,7 +144,8 @@ Relevant files:
 - AppStream metadata: [`data/com.caioregis.GalaxyBookSound.metainfo.xml`](data/com.caioregis.GalaxyBookSound.metainfo.xml)
 
 The RPM only carries what the app actually uses. The project's audio backend
-lives inside the app itself through a PipeWire `filter-chain`.
+lives inside the app itself through a PipeWire `filter-chain`; `pipewire-utils`
+provides the `pw-dump` command used to validate the active graph.
 
 ## License
 

@@ -136,19 +136,11 @@ mod tests {
     fn parses_dnf4_check_update_lines() {
         let output = "\
 galaxybook-sound.x86_64 1.1.0-1.fc44 caioregis
-akmod-galaxybook-max98390.x86_64 1.1.0-1.fc44 caioregis
 unrelated.x86_64 1.0-1 fedora
 ";
         assert_eq!(
-            parse_dnf_check_update_package_names(
-                output,
-                &[
-                    "galaxybook-sound",
-                    "akmod-galaxybook-max98390",
-                    "galaxybook-max98390-kmod-common",
-                ],
-            ),
-            vec!["galaxybook-sound", "akmod-galaxybook-max98390"]
+            parse_dnf_check_update_package_names(output, &["galaxybook-sound"]),
+            vec!["galaxybook-sound"]
         );
     }
 
@@ -159,19 +151,12 @@ Updating and loading repositories:
 Repositories loaded.
 Available upgrades
 Name                          Arch   Version       Repository
-galaxybook-max98390-kmod-common noarch 1.1.0-1.fc44 caioregis
 galaxybook-sound              x86_64 1.1.0-1.fc44 caioregis
+unrelated                     noarch 1.1.0-1.fc44 fedora
 ";
         assert_eq!(
-            parse_dnf_check_update_package_names(
-                output,
-                &[
-                    "galaxybook-sound",
-                    "akmod-galaxybook-max98390",
-                    "galaxybook-max98390-kmod-common",
-                ],
-            ),
-            vec!["galaxybook-max98390-kmod-common", "galaxybook-sound"]
+            parse_dnf_check_update_package_names(output, &["galaxybook-sound"]),
+            vec!["galaxybook-sound"]
         );
     }
 }

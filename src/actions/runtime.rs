@@ -13,11 +13,7 @@ use galaxybook_sound::{
 
 use crate::ui::SoundWindow;
 
-const SOUND_UPDATE_PACKAGES: &[&str] = &[
-    "galaxybook-sound",
-    "galaxybook-max98390-kmod-common",
-    "akmod-galaxybook-max98390",
-];
+const APP_UPDATE_PACKAGES: &[&str] = &["galaxybook-sound"];
 
 fn update_button_tooltip(packages: &[String]) -> String {
     trf(
@@ -33,7 +29,7 @@ impl SoundWindow {
 
         let (sender, receiver) = mpsc::channel();
         std::thread::spawn(move || {
-            let _ = sender.send(package_update_names(SOUND_UPDATE_PACKAGES));
+            let _ = sender.send(package_update_names(APP_UPDATE_PACKAGES));
         });
 
         let this = self.clone();
@@ -76,7 +72,7 @@ impl SoundWindow {
 
         let (sender, receiver) = mpsc::channel();
         std::thread::spawn(move || {
-            let _ = sender.send(install_package_updates(SOUND_UPDATE_PACKAGES));
+            let _ = sender.send(install_package_updates(APP_UPDATE_PACKAGES));
         });
 
         let this = self.clone();
@@ -85,7 +81,7 @@ impl SoundWindow {
                 Ok(Ok(_output)) => {
                     this.update_button.set_visible(false);
                     this.toast_overlay.add_toast(adw::Toast::new(&tr(
-                        "Atualizações instaladas. Reinicie o app se ele tiver sido atualizado.",
+                        "Atualização do app instalada. Reinicie o Galaxy Book Sound para usar a nova versão.",
                     )));
                     this.refresh_updates();
                     glib::ControlFlow::Break
@@ -143,17 +139,35 @@ impl SoundWindow {
 
     fn apply_session_state(&self, state: SoundSessionState) {
         let engine_status = if !state.pipewire_available {
-            tr("PipeWire ou WirePlumber não responderam nesta sessão.")
-        } else if state.filter_active && state.combined_output_active {
-            tr("Pipeline nativo do app ativo e encadeado à saída combinada.")
+            tr("Não foi possível consultar o grafo da sessão do PipeWire.")
+        } else if !state.physical_output_present {
+            tr("A sessão do PipeWire respondeu, mas a saída física interna não foi encontrada.")
+        } else if state.filter_active && state.combined_output_active && state.target_linked {
+            match state.target_output.as_deref() {
+                Some(output) => trf(
+                    "Pipeline ativo pela saída combinada virtual e vinculado à saída física: {output}",
+                    &[("output", output.to_string())],
+                ),
+                None => tr(
+                    "Pipeline ativo pela saída combinada virtual e vinculado a uma saída física.",
+                ),
+            }
+        } else if state.filter_active && !state.target_linked {
+            tr(
+                "O filtro está ativo, mas a saída combinada virtual não está vinculada à saída física interna.",
+            )
         } else if state.filter_active {
             match state.target_output.as_deref() {
                 Some(output) => trf(
-                    "Pipeline nativo do app ativo e encadeado ao dispositivo: {output}",
+                    "Pipeline ativo e vinculado à saída física: {output}",
                     &[("output", output.to_string())],
                 ),
-                None => tr("Pipeline nativo do app ativo na sessão atual."),
+                None => tr("Pipeline ativo e vinculado à saída física interna."),
             }
+        } else if state.filter_nodes_present {
+            tr(
+                "Os nós do filtro foram encontrados, mas o par de entrada/saída ou seus vínculos não estão válidos.",
+            )
         } else if state.config_present {
             tr(
                 "Configuração local encontrada, mas o pipeline ainda não foi carregado na sessão atual.",
@@ -349,5 +363,15 @@ impl SoundWindow {
         toolbar.set_content(Some(&scroller));
         dialog.set_child(Some(&toolbar));
         dialog.present(Some(&self.window));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn updater_manages_only_the_userspace_app_package() {
+        assert_eq!(APP_UPDATE_PACKAGES, &["galaxybook-sound"]);
     }
 }

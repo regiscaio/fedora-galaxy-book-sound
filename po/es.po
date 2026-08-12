@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: galaxybook-sound 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-26 12:19-0300\n"
+"POT-Creation-Date: 2026-08-11 20:59-0300\n"
 "PO-Revision-Date: 2026-04-20 18:36-0300\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,25 +17,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/actions/runtime.rs:24
+#: src/actions/runtime.rs:20
 #, rust-format
 msgid "Baixar e instalar atualizações: {packages}"
 msgstr ""
 
-#: src/actions/runtime.rs:72
+#: src/actions/runtime.rs:70
 msgid "Baixando e instalando atualizações do Galaxy Book Sound…"
 msgstr ""
 
-#: src/actions/runtime.rs:85
-msgid "Atualizações instaladas. Reinicie o app se ele tiver sido atualizado."
+#: src/actions/runtime.rs:84
+msgid ""
+"Atualização do app instalada. Reinicie o Galaxy Book Sound para usar a nova "
+"versão."
 msgstr ""
+"Actualización de la app instalada. Reinicia Galaxy Book Sound para usar la "
+"nueva versión."
 
-#: src/actions/runtime.rs:92
+#: src/actions/runtime.rs:91
 #, fuzzy
 msgid "Atualizar pacotes"
 msgstr "Actualizar diagnóstico"
 
-#: src/actions/runtime.rs:99
+#: src/actions/runtime.rs:98
 #, fuzzy
 msgid "Falha ao acompanhar a atualização solicitada."
 msgstr "No se pudo seguir la acción solicitada."
@@ -48,181 +52,278 @@ msgstr ""
 msgid "Verificando o perfil ativo da sessão…"
 msgstr ""
 
-#: src/actions/runtime.rs:131
+#: src/actions/runtime.rs:132
 #, fuzzy
 msgid "Falha ao atualizar o estado do áudio."
 msgstr "No se pudo actualizar el diagnóstico."
 
-#: src/actions/runtime.rs:139
-msgid "PipeWire ou WirePlumber não responderam nesta sessão."
-msgstr ""
+#: src/actions/runtime.rs:142
+msgid "Não foi possível consultar o grafo da sessão do PipeWire."
+msgstr "No se pudo consultar el grafo de la sesión de PipeWire."
 
-#: src/actions/runtime.rs:141
-msgid "Pipeline nativo do app ativo e encadeado à saída combinada."
-msgstr "Pipeline nativo de la app activo y encadenado a la salida combinada."
-
-#: src/actions/runtime.rs:145
-#, rust-format
-msgid "Pipeline nativo do app ativo e encadeado ao dispositivo: {output}"
+#: src/actions/runtime.rs:144
+msgid ""
+"A sessão do PipeWire respondeu, mas a saída física interna não foi "
+"encontrada."
 msgstr ""
+"La sesión de PipeWire respondió, pero no se encontró la salida física "
+"interna."
 
 #: src/actions/runtime.rs:148
-msgid "Pipeline nativo do app ativo na sessão atual."
+#, rust-format
+msgid ""
+"Pipeline ativo pela saída combinada virtual e vinculado à saída física: "
+"{output}"
 msgstr ""
+"Pipeline activo mediante la salida combinada virtual y vinculado a la salida "
+"física: {output}"
 
-#: src/actions/runtime.rs:151
+#: src/actions/runtime.rs:152
+msgid ""
+"Pipeline ativo pela saída combinada virtual e vinculado a uma saída física."
+msgstr ""
+"Pipeline activo mediante la salida combinada virtual y vinculado a una "
+"salida física."
+
+#: src/actions/runtime.rs:157
+msgid ""
+"O filtro está ativo, mas a saída combinada virtual não está vinculada à "
+"saída física interna."
+msgstr ""
+"El filtro está activo, pero la salida combinada virtual no está vinculada a "
+"la salida física interna."
+
+#: src/actions/runtime.rs:162
+#, rust-format
+msgid "Pipeline ativo e vinculado à saída física: {output}"
+msgstr "Pipeline activo y vinculado a la salida física: {output}"
+
+#: src/actions/runtime.rs:165
+msgid "Pipeline ativo e vinculado à saída física interna."
+msgstr "Pipeline activo y vinculado a la salida física interna."
+
+#: src/actions/runtime.rs:169
+msgid ""
+"Os nós do filtro foram encontrados, mas o par de entrada/saída ou seus "
+"vínculos não estão válidos."
+msgstr ""
+"Se encontraron los nodos del filtro, pero el par de entrada/salida o sus "
+"enlaces no son válidos."
+
+#: src/actions/runtime.rs:173
 msgid ""
 "Configuração local encontrada, mas o pipeline ainda não foi carregado na "
 "sessão atual."
 msgstr ""
 
-#: src/actions/runtime.rs:153
+#: src/actions/runtime.rs:176
 msgid "Nenhum pipeline do app foi aplicado ainda."
 msgstr ""
 
-#: src/actions/runtime.rs:158
+#: src/actions/runtime.rs:181
 #, rust-format
 msgid "Perfil ativo: {preset}"
 msgstr ""
 
-#: src/actions/runtime.rs:160
+#: src/actions/runtime.rs:183
 msgid ""
 "Há uma configuração local salva, mas ela ainda não está ativa na sessão."
 msgstr ""
 
-#: src/actions/runtime.rs:162
+#: src/actions/runtime.rs:185
 msgid "Nenhum perfil ativo agora."
 msgstr ""
 
-#: src/actions/runtime.rs:229
+#: src/actions/runtime.rs:252
 msgid "Bandas restauradas para a curva padrão do perfil selecionado."
 msgstr ""
 
-#: src/actions/runtime.rs:239
+#: src/actions/runtime.rs:262
 msgid "Aplicando a nova curva e reiniciando a sessão de áudio…"
 msgstr ""
 
-#: src/actions/runtime.rs:251
+#: src/actions/runtime.rs:276
 #, rust-format
 msgid "Perfil aplicado no PipeWire: {preset}"
 msgstr ""
 
-#: src/actions/runtime.rs:260 src/ui/window/pages.rs:59
+#: src/actions/runtime.rs:285 src/ui/window/pages.rs:59
 #, fuzzy
 msgid "Aplicar"
 msgstr "Aplicación"
 
-#: src/actions/runtime.rs:268
+#: src/actions/runtime.rs:293
 #, fuzzy
 msgid "Falha ao acompanhar a aplicação do perfil de áudio."
 msgstr "No se pudo seguir la acción solicitada."
 
-#: src/actions/runtime.rs:307 src/ui/about.rs:60 src/ui/mod.rs:180
-#: src/ui/mod.rs:233
+#: src/actions/runtime.rs:333 src/ui/about.rs:62 src/ui/mod.rs:178
+#: src/ui/mod.rs:237
 msgid "Detalhes"
 msgstr "Detalles"
 
-#: src/actions/runtime.rs:323
+#: src/actions/runtime.rs:349
 #, fuzzy
 msgid "A operação falhou, mas não retornou saída textual."
 msgstr "La acción falló, pero no devolvió salida textual."
 
-#: src/lib.rs:59
+#: src/lib.rs:72
 msgid "Neutro"
 msgstr ""
 
-#: src/lib.rs:60
+#: src/lib.rs:73
 msgid "Música"
 msgstr ""
 
-#: src/lib.rs:61
+#: src/lib.rs:74
 msgid "Cinema"
 msgstr ""
 
-#: src/lib.rs:187
-#, fuzzy, rust-format
-msgid "Falha ao preparar o diretório de configuração: {error}"
-msgstr "No se pudo abrir la app de la cámara: {error}"
-
-#: src/lib.rs:195
+#: src/lib.rs:266
 #, fuzzy, rust-format
 msgid "Falha ao serializar a configuração de áudio: {error}"
 msgstr "No se pudo iniciar la acción privilegiada: {error}"
 
-#: src/lib.rs:201
+#: src/lib.rs:272
 #, fuzzy, rust-format
 msgid "Falha ao salvar a configuração de áudio: {error}"
 msgstr "No se pudo iniciar la acción privilegiada: {error}"
 
-#: src/lib.rs:214
-msgid ""
-"Não foi possível identificar nenhuma saída de áudio para criar a saída "
-"combinada."
-msgstr "No se pudo identificar ninguna salida de audio para crear la salida combinada."
+#: src/lib.rs:285
+#, rust-format
+msgid "Falha ao ler a configuração anterior do PipeWire: {error}"
+msgstr "No se pudo leer la configuración anterior de PipeWire: {error}"
 
-#: src/lib.rs:221
+#: src/lib.rs:299
 msgid ""
-"Não foi possível identificar a saída interna do notebook para aplicar o "
-"pipeline."
+"Não foi possível consultar a sessão do PipeWire antes de aplicar o pipeline."
 msgstr ""
+"No se pudo consultar la sesión de PipeWire antes de aplicar el pipeline."
 
-#: src/lib.rs:259 src/ui/window/pages.rs:52
-msgid "Saída combinada"
-msgstr "Salida combinada"
+#: src/lib.rs:304
+msgid ""
+"Não foi possível identificar a saída física interna do notebook para aplicar "
+"o pipeline."
+msgstr ""
+"No se pudo identificar la salida física interna del portátil para aplicar el "
+"pipeline."
 
-#: src/lib.rs:295
+#: src/lib.rs:312
+msgid ""
+"A sessão do PipeWire deixou de responder durante a revalidação da saída "
+"física."
+msgstr ""
+"La sesión de PipeWire dejó de responder durante la revalidación de la salida "
+"física."
+
+#: src/lib.rs:320
+msgid "A saída física interna desapareceu durante a revalidação do pipeline."
+msgstr ""
+"La salida física interna desapareció durante la revalidación del pipeline."
+
+#: src/lib.rs:338
+#, rust-format
+msgid "Falha ao substituir a configuração do PipeWire: {error}"
+msgstr "No se pudo reemplazar la configuración de PipeWire: {error}"
+
+#: src/lib.rs:381
+msgid ""
+"A saída física interna mudou repetidamente durante a aplicação do perfil."
+msgstr "La salida física interna cambió repetidamente al aplicar el perfil."
+
+#: src/lib.rs:387
+msgid ""
+"O PipeWire não confirmou o filtro, a saída combinada e o vínculo com a saída "
+"física após aplicar a configuração."
+msgstr ""
+"PipeWire no confirmó el filtro, la salida combinada y el enlace con la "
+"salida física después de aplicar la configuración."
+
+#: src/lib.rs:391
+msgid ""
+"O PipeWire não confirmou o filtro e o vínculo com a saída física após "
+"aplicar a configuração."
+msgstr ""
+"PipeWire no confirmó el filtro y el enlace con la salida física después de "
+"aplicar la configuración."
+
+#: src/lib.rs:455
 msgid "Falha ao gerar a configuração do PipeWire do app."
 msgstr ""
 
-#: src/lib.rs:317
+#: src/lib.rs:479
 msgid "A saída alvo do notebook não expôs um node.name válido no PipeWire."
 msgstr ""
 
-#: src/lib.rs:324
-#, fuzzy, rust-format
-msgid "Falha ao preparar o diretório do PipeWire: {error}"
-msgstr "No se pudo abrir el enlace: {error}"
+#: src/lib.rs:482
+msgid "A saída alvo do notebook expôs um node.name vazio no PipeWire."
+msgstr ""
+"La salida de destino del portátil expuso un node.name vacío en PipeWire."
 
-#: src/lib.rs:339
-#, fuzzy, rust-format
-msgid "Falha ao gravar a configuração do PipeWire: {error}"
-msgstr "No se pudo iniciar la acción privilegiada: {error}"
+#: src/lib.rs:487
+msgid ""
+"A saída alvo não foi confirmada como a saída física interna do notebook."
+msgstr ""
+"La salida de destino no fue confirmada como la salida física interna del "
+"portátil."
 
-#: src/lib.rs:503
+#: src/lib.rs:589
+#, rust-format
+msgid ""
+"{primary}\n"
+"\n"
+"Também não foi possível restaurar a configuração anterior do PipeWire: "
+"{error}"
+msgstr ""
+"{primary}\n"
+"\n"
+"Tampoco se pudo restaurar la configuración anterior de PipeWire: {error}"
+
+#: src/lib.rs:596
+#, rust-format
+msgid ""
+"{primary}\n"
+"\n"
+"A configuração anterior do PipeWire foi restaurada e reativada."
+msgstr ""
+"{primary}\n"
+"\n"
+"La configuración anterior de PipeWire fue restaurada y reactivada."
+
+#: src/lib.rs:600
+#, rust-format
+msgid ""
+"{primary}\n"
+"\n"
+"A configuração anterior do PipeWire foi restaurada, mas a sessão de áudio "
+"não pôde ser reativada: {error}"
+msgstr ""
+"{primary}\n"
+"\n"
+"La configuración anterior de PipeWire fue restaurada, pero no se pudo "
+"reactivar la sesión de audio: {error}"
+
+#: src/lib.rs:774
 msgid ""
 "Systemd de usuário não está disponível. Não foi possível reiniciar PipeWire "
 "e WirePlumber."
 msgstr ""
 
-#: src/lib.rs:512
+#: src/lib.rs:783
 #, fuzzy, rust-format
 msgid "Falha ao reiniciar a sessão de áudio: {error}"
 msgstr "No se pudo iniciar la acción privilegiada: {error}"
 
-#: src/lib.rs:527
+#: src/lib.rs:798
 msgid "A sessão de áudio não aceitou o reinício do PipeWire e do WirePlumber."
 msgstr ""
 
-#: src/lib.rs:541
+#: src/lib.rs:814
 msgid "O PipeWire não voltou a responder após o reinício da sessão de áudio."
 msgstr ""
 
-#: src/lib.rs:558
-msgid ""
-"A saída combinada do Galaxy Book Sound não apareceu na sessão do PipeWire "
-"após aplicar a configuração."
-msgstr ""
-"La salida combinada de Galaxy Book Sound no apareció en la sesión de "
-"PipeWire después de aplicar la configuración."
-
-#: src/lib.rs:562
-msgid ""
-"O pipeline do Galaxy Book Sound não apareceu na sessão do PipeWire após "
-"aplicar a configuração."
-msgstr ""
-
-#: src/ui/about.rs:16 src/ui/about.rs:24 src/ui/about.rs:74 src/ui/about.rs:80
-#: src/ui/about.rs:104 src/ui/window/shell.rs:54
+#: src/ui/about.rs:16 src/ui/about.rs:24 src/ui/about.rs:76 src/ui/about.rs:81
+#: src/ui/about.rs:105 src/ui/window/shell.rs:54
 msgid "Sobre"
 msgstr "Acerca de"
 
@@ -236,30 +337,30 @@ msgid ""
 "fino quando você quiser ir além."
 msgstr ""
 
-#: src/ui/about.rs:49
+#: src/ui/about.rs:50
 msgid "Projeto"
 msgstr "Proyecto"
 
-#: src/ui/about.rs:50
+#: src/ui/about.rs:52
 msgid "Página da web"
 msgstr "Sitio web"
 
-#: src/ui/about.rs:52
+#: src/ui/about.rs:54
 msgid "Repositório do projeto"
 msgstr "Repositorio del proyecto"
 
-#: src/ui/about.rs:56
+#: src/ui/about.rs:58
 msgid "Relatar problema"
 msgstr "Informar un problema"
 
-#: src/ui/about.rs:61
+#: src/ui/about.rs:63
 #, fuzzy
 msgid ""
 "Versão, identificação do app e como ele se encaixa ao lado do Galaxy Book "
 "Setup."
 msgstr "Versión, identificación de la app y alcance actual del asistente."
 
-#: src/ui/about.rs:63
+#: src/ui/about.rs:65
 msgid "Abrir detalhes"
 msgstr "Abrir detalles"
 
@@ -267,54 +368,54 @@ msgstr "Abrir detalles"
 msgid "Abrir link"
 msgstr "Abrir enlace"
 
-#: src/ui/about.rs:131
+#: src/ui/about.rs:136
 #, rust-format
 msgid "Falha ao abrir o link: {error}"
 msgstr "No se pudo abrir el enlace: {error}"
 
-#: src/ui/mod.rs:153
+#: src/ui/mod.rs:150
 #, rust-format
 msgid "Versão {version}"
 msgstr "Versión {version}"
 
-#: src/ui/mod.rs:184
+#: src/ui/mod.rs:182
 msgid "Aplicativo"
 msgstr "Aplicación"
 
-#: src/ui/mod.rs:185
+#: src/ui/mod.rs:183
 msgid "Identificação pública e técnica do Galaxy Book Sound."
 msgstr "Identificación pública y técnica de Galaxy Book Sound."
 
-#: src/ui/mod.rs:189
+#: src/ui/mod.rs:187
 msgid "Nome"
 msgstr "Nombre"
 
-#: src/ui/mod.rs:190
+#: src/ui/mod.rs:188
 msgid "Versão"
 msgstr "Versión"
 
-#: src/ui/mod.rs:191
+#: src/ui/mod.rs:189
 msgid "App ID"
 msgstr "ID de la app"
 
-#: src/ui/mod.rs:192
+#: src/ui/mod.rs:190
 msgid "Desktop ID"
 msgstr "ID del escritorio"
 
-#: src/ui/mod.rs:204
+#: src/ui/mod.rs:202
 msgid "Escopo atual"
 msgstr "Alcance actual"
 
-#: src/ui/mod.rs:205
+#: src/ui/mod.rs:203
 #, fuzzy
 msgid "Resumo do que o painel de som cobre hoje."
 msgstr "Resumen de lo que cubre hoy esta primera entrega del asistente."
 
-#: src/ui/mod.rs:209
+#: src/ui/mod.rs:207
 msgid "Objetivo"
 msgstr "Objetivo"
 
-#: src/ui/mod.rs:210
+#: src/ui/mod.rs:209
 msgid ""
 "Ajudar você a deixar o áudio do Galaxy Book mais agradável no uso diário, "
 "com perfis prontos e espaço para ajuste fino quando fizer sentido."
@@ -325,7 +426,7 @@ msgstr ""
 msgid "Módulo disponível"
 msgstr "Diagnóstico no disponible"
 
-#: src/ui/mod.rs:214
+#: src/ui/mod.rs:215
 msgid ""
 "Perfis locais, equalizador de 10 bandas, modo Atmos compatível, saída "
 "combinada e aplicação direta na sessão via PipeWire."
@@ -333,11 +434,11 @@ msgstr ""
 "Perfiles locales, ecualizador de 10 bandas, modo Atmos compatible, salida "
 "combinada y aplicación directa en la sesión mediante PipeWire."
 
-#: src/ui/mod.rs:217
+#: src/ui/mod.rs:219
 msgid "Limite atual"
 msgstr ""
 
-#: src/ui/mod.rs:218
+#: src/ui/mod.rs:221
 msgid ""
 "Diagnóstico de hardware, instalação do stack e correções de speaker ficam no "
 "Galaxy Book Setup. Aqui o foco é só o ajuste de som, sem Dolby Atmos "
@@ -348,11 +449,11 @@ msgstr ""
 msgid "Coletando…"
 msgstr "Recopilando…"
 
-#: src/ui/window/pages.rs:37
+#: src/ui/window/pages.rs:35
 msgid "Perfil base"
 msgstr ""
 
-#: src/ui/window/pages.rs:38
+#: src/ui/window/pages.rs:37
 msgid "Escolha a curva usada como ponto de partida para as 10 bandas."
 msgstr ""
 
@@ -366,10 +467,15 @@ msgid ""
 "proprietário."
 msgstr ""
 
+#: src/ui/window/pages.rs:52
+msgid "Saída combinada"
+msgstr "Salida combinada"
+
 #: src/ui/window/pages.rs:54
 msgid ""
 "Duplica o áudio processado para todos os dispositivos de saída disponíveis."
-msgstr "Duplica el audio procesado en todos los dispositivos de salida disponibles."
+msgstr ""
+"Duplica el audio procesado en todos los dispositivos de salida disponibles."
 
 #: src/ui/window/pages.rs:61
 msgid "Restaurar"
@@ -402,7 +508,9 @@ msgstr ""
 #: src/ui/window/pages.rs:86
 msgid ""
 "Perfil base, modos de processamento e nome do preset local que será salvo."
-msgstr "Perfil base, modos de procesamiento y nombre del preset local que se guardará."
+msgstr ""
+"Perfil base, modos de procesamiento y nombre del preset local que se "
+"guardará."
 
 #: src/ui/window/pages.rs:95
 msgid "Equalizador de 10 bandas"
@@ -438,6 +546,21 @@ msgstr "No se pudo iniciar la acción privilegiada: {error}"
 #, fuzzy
 msgid "A atualização falhou, mas não retornou saída textual."
 msgstr "La acción falló, pero no devolvió salida textual."
+
+#, fuzzy, rust-format
+#~ msgid "Falha ao preparar o diretório de configuração: {error}"
+#~ msgstr "No se pudo abrir la app de la cámara: {error}"
+
+#, fuzzy, rust-format
+#~ msgid "Falha ao preparar o diretório do PipeWire: {error}"
+#~ msgstr "No se pudo abrir el enlace: {error}"
+
+#~ msgid ""
+#~ "A saída combinada do Galaxy Book Sound não apareceu na sessão do PipeWire "
+#~ "após aplicar a configuração."
+#~ msgstr ""
+#~ "La salida combinada de Galaxy Book Sound no apareció en la sesión de "
+#~ "PipeWire después de aplicar la configuración."
 
 #~ msgid "Instalar suporte principal"
 #~ msgstr "Instalar soporte principal"

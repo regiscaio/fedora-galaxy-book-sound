@@ -25,6 +25,7 @@ BuildRequires:  pkgconfig(libadwaita-1)
 BuildRequires:  rust
 
 Requires:       pipewire
+Requires:       pipewire-utils
 Requires:       polkit
 Requires:       systemd
 Requires:       wireplumber

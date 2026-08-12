@@ -38,6 +38,11 @@ perfis e o modo `Atmos compatível` para os alto-falantes internos. Instalação
 assistida, validação do ambiente e diagnósticos gerais do notebook ficam no
 [`fedora-galaxy-book-setup`](https://github.com/regiscaio/fedora-galaxy-book-setup).
 
+O atualizador deste app consulta e atualiza exclusivamente o pacote
+`galaxybook-sound`. Instalação, atualização, reconstrução para novos kernels e
+diagnóstico de inicialização do driver MAX98390 pertencem ao `Galaxy Book
+Setup`; este app não altera o ciclo de vida do driver.
+
 ## Interface atual
 
 ### Tela principal
@@ -59,10 +64,12 @@ O projeto entrega:
 - perfis base `Neutro`, `Música` e `Cinema`;
 - equalizador de 10 bandas com ajuste manual;
 - modo `Atmos compatível` com ativação e desativação pelo próprio app;
-- opção de `Saída combinada` para duplicar o áudio processado em todas as
-  saídas disponíveis;
+- opção de `Saída combinada` para encaminhar o áudio processado por um sink
+  virtual somente à saída física interna revalidada;
 - interface em página única no padrão de preferências do GNOME;
 - configuração persistida pelo próprio app para o fluxo de áudio interno.
+- validação do grafo da sessão pelo `pw-dump`, incluindo os nós de entrada e
+  saída do filtro, a saída física interna e os vínculos entre eles.
 
 Este projeto **não** entrega:
 
@@ -93,8 +100,10 @@ alto-falantes internos do notebook. Na prática, isso significa:
 Tecnicamente, isso hoje é feito com um `filter-chain` próprio em
 `~/.config/pipewire/pipewire.conf.d/`, aplicado pela política de `smart
 filters` do `WirePlumber`. Quando a `Saída combinada` está ativa, o app
-também cria um sink virtual com `libpipewire-module-combine-stream` e o usa
-como destino do pipeline.
+também cria um sink virtual com `libpipewire-module-combine-stream`, o usa
+como destino do pipeline e cria stream somente para o `node.name` físico
+interno revalidado — nunca para HDMI, Bluetooth ou USB por correspondência
+genérica.
 
 ## Build e empacotamento
 
@@ -137,7 +146,8 @@ Arquivos relevantes:
 - metadados AppStream: [`data/com.caioregis.GalaxyBookSound.metainfo.xml`](data/com.caioregis.GalaxyBookSound.metainfo.xml)
 
 O pacote RPM acompanha só o que o app realmente usa. O backend de áudio do
-projeto fica no próprio app, via `filter-chain` em `PipeWire`.
+projeto fica no próprio app, via `filter-chain` em `PipeWire`; `pipewire-utils`
+fornece o `pw-dump` usado para validar o grafo ativo.
 
 ## Licença
 
