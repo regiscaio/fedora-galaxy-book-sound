@@ -69,7 +69,13 @@ impl SoundWindow {
         self.profile_row.set_sensitive(sensitive);
         self.atmos_switch_row.set_sensitive(sensitive);
         self.combined_output_switch_row.set_sensitive(sensitive);
-        self.apply_equalizer_button.set_sensitive(sensitive);
+        let speaker_blocked = self
+            .session_state
+            .borrow()
+            .as_ref()
+            .is_some_and(|state| state.speaker_driver_issue.is_some());
+        self.apply_equalizer_button
+            .set_sensitive(sensitive && !speaker_blocked);
         self.reset_equalizer_button.set_sensitive(sensitive);
 
         for control in &self.band_controls {

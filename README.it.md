@@ -44,6 +44,11 @@ L'aggiornamento integrato controlla e aggiorna esclusivamente il pacchetto
 e diagnostica di avvio del driver MAX98390 appartengono a `Galaxy Book Setup`;
 questa app non modifica il ciclo di vita del driver.
 
+Se PipeWire mostra l’uscita interna ma un amplificatore MAX98390 è privo di
+driver, Sound blocca l’applicazione del profilo prima di riavviare l’audio.
+Controllare gli altoparlanti in Galaxy Book Setup e aggiornare lo stato in
+Sound.
+
 ## Interfaccia attuale
 
 ### Schermata principale

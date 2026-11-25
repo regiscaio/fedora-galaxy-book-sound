@@ -17,6 +17,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: src/lib.rs:471
+msgid "Um amplificador MAX98390 está sem driver. Verifique os alto-falantes no Galaxy Book Setup e atualize o estado aqui."
+msgstr "Un amplificador MAX98390 no tiene controlador asociado. Compruebe los altavoces en Galaxy Book Setup y actualice el estado aquí."
+
+#: src/lib.rs:474
+msgid "Não foi possível verificar os amplificadores internos. Atualize o estado antes de aplicar o perfil."
+msgstr "No se pudieron comprobar los amplificadores internos. Actualice el estado antes de aplicar el perfil."
+
+#: src/actions/runtime.rs:184
+#, rust-format
+msgid "Perfil carregado no PipeWire: {preset}"
+msgstr "Perfil cargado en PipeWire: {preset}"
+
 #: src/actions/runtime.rs:20
 #, rust-format
 msgid "Baixar e instalar atualizações: {packages}"

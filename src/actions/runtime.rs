@@ -138,7 +138,9 @@ impl SoundWindow {
     }
 
     fn apply_session_state(&self, state: SoundSessionState) {
-        let engine_status = if !state.pipewire_available {
+        let engine_status = if let Some(issue) = &state.speaker_driver_issue {
+            issue.clone()
+        } else if !state.pipewire_available {
             tr("Não foi possível consultar o grafo da sessão do PipeWire.")
         } else if !state.physical_output_present {
             tr("A sessão do PipeWire respondeu, mas a saída física interna não foi encontrada.")
@@ -178,6 +180,10 @@ impl SoundWindow {
         self.engine_status_row.set_subtitle(&engine_status);
 
         let active_preset = match state.active_profile_name.as_ref() {
+            Some(name) if state.speaker_driver_issue.is_some() => trf(
+                "Perfil carregado no PipeWire: {preset}",
+                &[("preset", name.to_string())],
+            ),
             Some(name) => trf("Perfil ativo: {preset}", &[("preset", name.to_string())]),
             None if state.config_present => {
                 tr("Há uma configuração local salva, mas ela ainda não está ativa na sessão.")

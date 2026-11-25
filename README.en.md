@@ -43,6 +43,10 @@ MAX98390 driver installation, updates, rebuilds for new kernels, and boot-time
 diagnostics belong to `Galaxy Book Setup`; this app does not alter the driver
 lifecycle.
 
+If PipeWire lists the internal output but a MAX98390 amplifier is unbound,
+Sound blocks profile application before restarting audio. Check the speakers
+in Galaxy Book Setup and refresh the status in Sound.
+
 ## Current interface
 
 ### Main screen

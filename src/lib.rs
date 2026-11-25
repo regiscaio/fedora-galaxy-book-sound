@@ -30,6 +30,7 @@ const PIPEWIRE_FILTER_NAME: &str = "galaxybook-sound";
 const PIPEWIRE_COMBINED_SINK_NODE: &str = "galaxybook_sound_combined_sink";
 const PIPEWIRE_COMBINED_SINK_DESCRIPTION: &str = "Galaxy Book Sound - Saída combinada";
 const PIPEWIRE_FILTER_CONFIG_NAME: &str = "99-galaxybook-sound.conf";
+const I2C_DEVICES: &str = "/sys/bus/i2c/devices";
 const PW_DUMP_COMMAND: &str = "/usr/bin/pw-dump";
 const SYSTEMCTL_COMMAND: &str = "/usr/bin/systemctl";
 const WPCTL_COMMAND: &str = "/usr/bin/wpctl";
@@ -161,6 +162,7 @@ impl SoundAppConfig {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct SoundSessionState {
     pub pipewire_available: bool,
+    pub speaker_driver_issue: Option<String>,
     pub config_present: bool,
     pub filter_nodes_present: bool,
     pub physical_output_present: bool,
@@ -294,6 +296,9 @@ pub fn save_sound_app_config(config: &SoundAppConfig) -> Result<(), String> {
 }
 
 pub fn save_and_apply_profile(config: &SoundAppConfig) -> Result<String, String> {
+    if let Some(issue) = speaker_driver_issue(Path::new(I2C_DEVICES)) {
+        return Err(issue);
+    }
     let mut normalized_config = config.clone();
     normalized_config.normalize();
 
@@ -422,10 +427,12 @@ pub fn save_and_apply_profile(config: &SoundAppConfig) -> Result<String, String>
 }
 
 pub fn collect_sound_session_state() -> SoundSessionState {
+    let speaker_driver_issue = speaker_driver_issue(Path::new(I2C_DEVICES));
     let config_present = pipewire_filter_config_path().exists();
     let Ok(graph) = pipewire_graph_with_retry(STATE_QUERY_ATTEMPTS, STATE_QUERY_RETRY_DELAY) else {
         return SoundSessionState {
             pipewire_available: false,
+            speaker_driver_issue,
             config_present,
             ..SoundSessionState::default()
         };
@@ -443,6 +450,7 @@ pub fn collect_sound_session_state() -> SoundSessionState {
 
     SoundSessionState {
         pipewire_available: true,
+        speaker_driver_issue,
         config_present,
         filter_nodes_present: graph_state.filter_nodes_present,
         physical_output_present: graph_state.physical_output_present,
@@ -452,6 +460,54 @@ pub fn collect_sound_session_state() -> SoundSessionState {
         active_profile_name,
         target_output: graph_state.target_output,
     }
+}
+
+// PipeWire can expose an internal Speaker sink while the kernel has no driver
+// bound to its amplifiers. Inspect existing clients only; Setup owns repair.
+fn speaker_driver_issue(devices: &Path) -> Option<String> {
+    match has_unbound_max98390(devices) {
+        Ok(false) => None,
+        Ok(true) => Some(tr(
+            "Um amplificador MAX98390 está sem driver. Verifique os alto-falantes no Galaxy Book Setup e atualize o estado aqui.",
+        )),
+        Err(_) => Some(tr(
+            "Não foi possível verificar os amplificadores internos. Atualize o estado antes de aplicar o perfil.",
+        )),
+    }
+}
+
+fn has_unbound_max98390(devices: &Path) -> io::Result<bool> {
+    let entries = match fs::read_dir(devices) {
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(false),
+        result => result?,
+    };
+    for entry in entries {
+        let entry = entry?;
+        let filename = entry.file_name();
+        let id = filename.to_string_lossy();
+        let is_primary = id.starts_with("i2c-MAX98390:") || id.starts_with("i2c-MX98390:");
+        if !is_primary {
+            // The other amplifiers are regular I²C clients. Addresses alone
+            // also match unrelated chips, so identify them by their name.
+            if !id.split_once('-').is_some_and(|(bus, address)| {
+                !bus.is_empty()
+                    && bus.bytes().all(|b| b.is_ascii_digit())
+                    && matches!(address, "0039" | "003c" | "003d")
+            }) {
+                continue;
+            }
+            match fs::read_to_string(entry.path().join("name")) {
+                Ok(name) if name.trim_end() == "max98390-hda" => {}
+                Ok(_) => continue,
+                Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
+                Err(error) => return Err(error),
+            }
+        }
+        if !entry.path().join("driver").try_exists()? && entry.path().try_exists()? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 pub fn run_smoke_test() -> Result<(), String> {
@@ -1844,6 +1900,44 @@ mod tests {
         assert_eq!(graph.nodes[1].device_bus.as_deref(), Some("pci"));
         assert!(is_internal_speaker_output(&graph.nodes[1]));
         assert!(graph.has_valid_link(40, 68));
+    }
+
+    #[test]
+    fn max98390_preflight_distinguishes_speaker_nodes_from_bound_amplifiers() {
+        use std::os::unix::fs::symlink;
+
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root =
+            env::temp_dir().join(format!("sound-amplifiers-{}-{unique}", std::process::id()));
+        fs::create_dir(&root).unwrap();
+        let unrelated = root.join("1-0039");
+        fs::create_dir(&unrelated).unwrap();
+        fs::write(unrelated.join("name"), "other-chip\n").unwrap();
+        assert!(speaker_driver_issue(&root).is_none());
+
+        let primary = root.join("i2c-MAX98390:00");
+        fs::create_dir(&primary).unwrap();
+        let config = SoundAppConfig::default();
+        let mut graph = direct_filter_graph();
+        graph.links.push(valid_link(11, 12));
+        assert!(evaluate_profile_graph(&graph, &config, None).filter_active);
+        assert!(speaker_driver_issue(&root).is_some());
+        let driver = root.join("driver-target");
+        fs::create_dir(&driver).unwrap();
+        symlink(&driver, primary.join("driver")).unwrap();
+        assert!(speaker_driver_issue(&root).is_none());
+
+        let companion = root.join("2-003d");
+        fs::create_dir(&companion).unwrap();
+        fs::write(companion.join("name"), "max98390-hda\n").unwrap();
+        assert!(speaker_driver_issue(&root).is_some());
+        symlink(&driver, companion.join("driver")).unwrap();
+        assert!(speaker_driver_issue(&root).is_none());
+        assert!(speaker_driver_issue(&companion.join("name")).is_some());
+        fs::remove_dir_all(&root).unwrap();
     }
 
     #[test]
